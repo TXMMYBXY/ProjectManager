@@ -5,3 +5,17 @@
       context: .
       dockerfile: ProjectManager.Api/Dockerfile
 
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: projectmanager-db
+    ports:
+      - "1433:1433"
+    environment:
+      SA_PASSWORD: 123QazWsxEdc
+      ACCEPT_EULA: Y
+    volumes:
+      - mssql_data:/var/opt/mssql
+
+volumes:
+  project_storage:
+  mssql_data:

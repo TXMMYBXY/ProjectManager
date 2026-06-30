@@ -6,3 +6,6 @@ riderModule.iml
 *.user
 /.idea
 .idea
+.env
+.vs/
+.vs
