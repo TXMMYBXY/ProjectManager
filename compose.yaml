@@ -1,0 +1,7 @@
+﻿services:
+  projectmanager.api:
+    image: projectmanager.api
+    build:
+      context: .
+      dockerfile: ProjectManager.Api/Dockerfile
+
