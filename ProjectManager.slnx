@@ -1,5 +1,6 @@
 <Solution>
   <Folder Name="/Solution Items/">
+    <File Path=".env.example" />
     <File Path=".gitignore" />
     <File Path="compose.yaml" />
   </Folder>
@@ -8,5 +9,4 @@
   <Project Path="ProjectManager.Entities/ProjectManager.Entities.csproj" />
   <Project Path="ProjectManager.Infrastructure.Test/ProjectManager.Infrastructure.Test.csproj" />
   <Project Path="ProjectManager.Infrastructure/ProjectManager.Infrastructure.csproj" />
-  <Project Path="ProjectManager.Shared/ProjectManager.Shared.csproj" />
 </Solution>
