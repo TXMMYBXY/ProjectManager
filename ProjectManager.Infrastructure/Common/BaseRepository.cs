@@ -12,7 +12,14 @@ public class BaseRepository<T> : IBaseRepository<T> where T : class
     {
         _dbContext = dbContext;
     }
-    
+
+    public async Task<T?> GetByIdAsync(int id)
+    {
+        return await _dbContext.Set<T>()
+            .Where(e => EF.Property<int>(e, "Id") == id)
+            .SingleOrDefaultAsync();
+    }
+
     public async Task CreateAsync(T entity)
     {
         await _dbContext.Set<T>().AddAsync(entity);
@@ -22,6 +29,13 @@ public class BaseRepository<T> : IBaseRepository<T> where T : class
     {
         return await _dbContext.Set<T>()
             .Where(e => EF.Property<int>(e, "Id") == entityId)
+            .ExecuteDeleteAsync();
+    }
+
+    public async Task<int> BulkDeleteAsync(IReadOnlyCollection<int> ids)
+    {
+        return await _dbContext.Set<T>()
+            .Where(e => ids.Contains(EF.Property<int>(e,"Id")))
             .ExecuteDeleteAsync();
     }
 
