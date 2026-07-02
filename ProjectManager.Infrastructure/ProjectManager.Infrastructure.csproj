@@ -19,6 +19,7 @@
 
     </ItemGroup>
     <ItemGroup>
+      <ProjectReference Include="..\ProjectManager.Application\ProjectManager.Application.csproj" />
       <ProjectReference Include="..\ProjectManager.Entities\ProjectManager.Entities.csproj" />
     </ItemGroup>
     

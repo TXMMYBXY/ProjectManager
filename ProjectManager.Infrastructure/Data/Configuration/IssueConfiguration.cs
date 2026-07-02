@@ -4,9 +4,9 @@ using ProjectManager.Entities.Models;
 
 namespace ProjectManager.Infrastructure.Data.Configuration;
 
-public class IssueConfiguration : IEntityTypeConfiguration<Issue>
+public class IssueConfiguration : IEntityTypeConfiguration<Entities.Models.Issue>
 {
-    public void Configure(EntityTypeBuilder<Issue> builder)
+    public void Configure(EntityTypeBuilder<Entities.Models.Issue> builder)
     {
         builder.ToTable("Issues");
         

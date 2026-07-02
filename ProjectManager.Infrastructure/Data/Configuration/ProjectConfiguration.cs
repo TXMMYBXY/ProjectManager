@@ -4,9 +4,9 @@ using ProjectManager.Entities.Models;
 
 namespace ProjectManager.Infrastructure.Data.Configuration;
 
-public class ProjectConfiguration : IEntityTypeConfiguration<Project>
+public class ProjectConfiguration : IEntityTypeConfiguration<Entities.Models.Project>
 {
-    public void Configure(EntityTypeBuilder<Project> builder)
+    public void Configure(EntityTypeBuilder<Entities.Models.Project> builder)
     {
         builder.ToTable("Projects");
 

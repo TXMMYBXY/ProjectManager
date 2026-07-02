@@ -1,4 +1,3 @@
-using System.ComponentModel.DataAnnotations;
 using ProjectManager.Entities.Enums;
 
 namespace ProjectManager.Entities.Models;

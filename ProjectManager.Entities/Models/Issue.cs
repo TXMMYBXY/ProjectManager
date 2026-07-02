@@ -1,11 +1,10 @@
-using System.ComponentModel.DataAnnotations;
 using ProjectManager.Entities.Enums;
 
 namespace ProjectManager.Entities.Models;
 
 public class Issue : EntityBase
 {
-    public string Title { get; set; }
+    public required string Title { get; set; }
     
     public IssueStatus Status { get; set; } = IssueStatus.ToDo;
     

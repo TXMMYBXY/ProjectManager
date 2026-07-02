@@ -4,9 +4,9 @@ using ProjectManager.Entities.Models;
 
 namespace ProjectManager.Infrastructure.Data.Configuration;
 
-public class EmployeeConfiguration : IEntityTypeConfiguration<Employee>
+public class EmployeeConfiguration : IEntityTypeConfiguration<Entities.Models.Employee>
 {
-    public void Configure(EntityTypeBuilder<Employee> builder)
+    public void Configure(EntityTypeBuilder<Entities.Models.Employee> builder)
     {
         builder.ToTable("Employees");
         
