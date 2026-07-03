@@ -1,9 +1,9 @@
-namespace ProjectManager.Api.Utils;
+namespace ProjectManager.Application.Utils;
 
 public struct Optional<T>
 {
-    public bool HasValue { get; }
-    public T Value { get; }
+    public bool HasValue { get; init; }
+    public T Value { get; init; }
 
     public Optional(T value)
     {

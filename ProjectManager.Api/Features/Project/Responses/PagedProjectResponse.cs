@@ -5,7 +5,7 @@ namespace ProjectManager.Api.Features.Project.Responses;
 
 public class PagedProjectResponse
 {
-    [JsonPropertyName("users")]
+    [JsonPropertyName("projects")]
     public IReadOnlyList<ProjectItemDto>? Projects { get; set; }
     
     [JsonPropertyName("totalCount")]

@@ -1,12 +1,12 @@
 using System.Text.Json.Serialization;
-using ProjectManager.Application.Employee.Dto;
+using ProjectManager.Application.Issue.Dto;
 
-namespace ProjectManager.Api.Features.Employee.Responses;
+namespace ProjectManager.Api.Features.Issue.Responses;
 
-public class PagedEmployeeResponse
+public class PagedIssueResponse
 {
-    [JsonPropertyName("employees")]
-    public IReadOnlyList<EmployeeItemDto>? Employees { get; set; }
+    [JsonPropertyName("issues")]
+    public IReadOnlyList<IssueItemDto>? Issues { get; set; }
     
     [JsonPropertyName("totalCount")]
     public int TotalCount { get; set; }

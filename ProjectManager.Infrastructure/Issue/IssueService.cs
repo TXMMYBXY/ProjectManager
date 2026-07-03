@@ -62,6 +62,9 @@ public class IssueService : IIssueService
         
         _mapper.Map(dto, issue);
         
+        if(dto.Comments.HasValue)
+            issue.Comments = dto.Comments.Value;
+        
         await _issueRepository.SaveChangesAsync();
         
         _logger.LogInformation("Issue successfully updated with id {0}", issue.Id);

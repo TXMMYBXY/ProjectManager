@@ -21,6 +21,7 @@ public static class DependencyInjection
     {
         services.AddAutoMapper(typeof(ProjectMappingProfile).Assembly);
         services.AddAutoMapper(typeof(EmployeeMappingProfile).Assembly);
+        services.AddAutoMapper(typeof(IssueMappingProfile).Assembly);
         
         services.AddScoped<IProjectService, ProjectService>();
         services.AddScoped<IEmployeeService, EmployeeService>();
