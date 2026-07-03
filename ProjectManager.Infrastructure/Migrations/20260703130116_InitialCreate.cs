@@ -36,7 +36,7 @@ namespace ProjectManager.Infrastructure.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Title = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     CompanyCustomer = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    CompanyExecuter = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    CompanyExecutor = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     StartDate = table.Column<DateTime>(type: "date", nullable: false),
                     FinishDate = table.Column<DateTime>(type: "date", nullable: true),
                     Priority = table.Column<byte>(type: "tinyint", nullable: false),

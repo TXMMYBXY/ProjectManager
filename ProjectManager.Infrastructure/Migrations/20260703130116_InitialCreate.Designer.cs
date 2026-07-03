@@ -12,7 +12,7 @@ using ProjectManager.Infrastructure.Data;
 namespace ProjectManager.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260630102325_InitialCreate")]
+    [Migration("20260703130116_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -140,7 +140,7 @@ namespace ProjectManager.Infrastructure.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<string>("CompanyExecuter")
+                    b.Property<string>("CompanyExecutor")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");

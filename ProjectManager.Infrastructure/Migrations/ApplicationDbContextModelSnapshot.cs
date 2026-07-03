@@ -137,7 +137,7 @@ namespace ProjectManager.Infrastructure.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<string>("CompanyExecuter")
+                    b.Property<string>("CompanyExecutor")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");

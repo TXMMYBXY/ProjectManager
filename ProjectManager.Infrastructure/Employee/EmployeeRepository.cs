@@ -57,7 +57,7 @@ public class EmployeeRepository : BaseRepository<Entities.Models.Employee>, IEmp
                     Id = ep.Project.Id,
                     Title = ep.Project.Title,
                     CompanyCustomer = ep.Project.CompanyCustomer,
-                    CompanyExecuter = ep.Project.CompanyExecuter,
+                    CompanyExecuter = ep.Project.CompanyExecutor,
                     StartDate = ep.Project.StartDate,
                     FinishDate = ep.Project.FinishDate,
                     Priority = ep.Project.Priority

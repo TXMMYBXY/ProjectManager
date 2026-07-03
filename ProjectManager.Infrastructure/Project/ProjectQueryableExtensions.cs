@@ -15,7 +15,7 @@ public static class ProjectQueryableExtensions
             query = query.Where(p => p.CompanyCustomer.Contains(filter.CompanyCustomer));
         
         if (!string.IsNullOrWhiteSpace(filter.CompanyExecuter))
-            query = query.Where(p => p.CompanyExecuter.Contains(filter.CompanyExecuter));
+            query = query.Where(p => p.CompanyExecutor.Contains(filter.CompanyExecuter));
         
         if(filter.StartDateFrom.HasValue)
             query = query.Where(p => p.StartDate <= filter.StartDateFrom.Value);
@@ -57,8 +57,8 @@ public static class ProjectQueryableExtensions
 
                 ProjectSortField.CompanyExecuter =>
                     filter.Descending
-                        ? query.OrderBy(p => p.CompanyExecuter)
-                        : query.OrderByDescending(p => p.CompanyExecuter),
+                        ? query.OrderBy(p => p.CompanyExecutor)
+                        : query.OrderByDescending(p => p.CompanyExecutor),
 
                 ProjectSortField.StartDate =>
                     filter.Descending
