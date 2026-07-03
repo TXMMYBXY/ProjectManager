@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using ProjectManager.Api.Middleware;
 using ProjectManager.Infrastructure;
 using ProjectManager.Infrastructure.Configuration;
 using ProjectManager.Infrastructure.Data;
@@ -12,6 +13,8 @@ builder.Services.AddOpenApi();
 builder.Services.AddInfrastructure(builder.Configuration);
 
 var app = builder.Build();
+
+app.UseErrorHandling();
 
 using (var scope = app.Services.CreateScope())
 {

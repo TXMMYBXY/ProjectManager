@@ -1,5 +1,6 @@
 using AutoMapper;
 using Microsoft.Extensions.Logging;
+using ProjectManager.Application.Common.Exceptions;
 using ProjectManager.Application.Employee;
 using ProjectManager.Application.Employee.Dto;
 
@@ -38,7 +39,7 @@ public class EmployeeService : IEmployeeService
     {
         var employeeDto = await _employeeRepository.GetEmployeeByIdAsync(id);
         
-        ArgumentNullException.ThrowIfNull(employeeDto, "Employee not found");
+        NotFoundException.ThrowIfNull(employeeDto, "Employee not found");
         
         return employeeDto;
     }
@@ -47,30 +48,51 @@ public class EmployeeService : IEmployeeService
     {
         var employee = _mapper.Map<Entities.Models.Employee>(dto);
         
+        ConflictException.ThrowIf(await _employeeRepository.IsEmailExists(dto.Email), "Email already exists");
+        
         await _employeeRepository.CreateAsync(employee);
         await _employeeRepository.SaveChangesAsync();
+        
+        _logger.LogInformation("Employee successfully created with id {0}", employee.Id);
     }
 
     public async Task<EmployeeInfoDto> UpdateEmployeeAsync(int employeeId, UpdateEmployeeDto dto)
     {
         var employee = await _employeeRepository.GetByIdAsync(employeeId);
         
-        ArgumentNullException.ThrowIfNull(employee, "Employee not found");
+        NotFoundException.ThrowIfNull(employee, "Employee not found");
         
         _mapper.Map(dto, employee);
 
         await _employeeRepository.SaveChangesAsync();
+        
+        _logger.LogInformation("Employee successfully updated with id {0}", employee.Id);;
         
         return _mapper.Map<EmployeeInfoDto>(employee);
     }
 
     public async Task<bool> DeleteEmployeeByIdAsync(int id)
     {
-        return await _employeeRepository.DeleteByIdAsync(id) > 0;
+        var result = await _employeeRepository.DeleteByIdAsync(id) > 0;
+        
+        await _employeeRepository.SaveChangesAsync();
+
+        if (result)
+            _logger.LogInformation("Employee successfully deleted with id {0}", id);
+        else
+            throw new NotFoundException("Employee not found");
+        
+        return result;
     }
 
     public async Task<int> BulkDeleteEmployeesAsync(IReadOnlyCollection<int> ids)
     {
-        return await _employeeRepository.BulkDeleteAsync(ids);
+        var result = await _employeeRepository.BulkDeleteAsync(ids);
+
+        await _employeeRepository.SaveChangesAsync();
+        
+        _logger.LogInformation("Bulk delete employees successfully");
+
+        return result;
     }
 }

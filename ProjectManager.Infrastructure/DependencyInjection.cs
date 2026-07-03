@@ -18,7 +18,9 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        
+        services.AddScoped<IProjectService, ProjectService>();
+        services.AddScoped<IEmployeeService, EmployeeService>();
+        services.AddScoped<IIssueService, IssueService>();
         
         services.AddScoped(typeof(IBaseRepository<>), typeof(BaseRepository<>));
         services.AddScoped<IProjectRepository, ProjectRepository>();
@@ -29,7 +31,6 @@ public static class DependencyInjection
             configuration.GetSection("DataBaseConnectionSettings").Get<DataBaseConnectionSettings>();
         services.AddDbContext<ApplicationDbContext>(options =>
         {
-            Console.WriteLine(dataBaseConnectionSettings.ConnectionString);
             options.UseSqlServer(dataBaseConnectionSettings.ConnectionString,
                 sqlOptions =>
                 {

@@ -81,4 +81,9 @@ public class EmployeeRepository : BaseRepository<Entities.Models.Employee>, IEmp
             })
             .SingleOrDefaultAsync();
     }
+
+    public async Task<bool> IsEmailExists(string email)
+    {
+        return await _dbContext.Employees.AnyAsync(e => e.Email.Equals(email));
+    }
 }

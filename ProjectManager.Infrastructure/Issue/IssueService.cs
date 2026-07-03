@@ -1,5 +1,6 @@
 using AutoMapper;
 using Microsoft.Extensions.Logging;
+using ProjectManager.Application.Common.Exceptions;
 using ProjectManager.Application.Issue;
 using ProjectManager.Application.Issue.Dto;
 
@@ -38,7 +39,7 @@ public class IssueService : IIssueService
     {
         var issueDto = await _issueRepository.GetIssueByIdAsync(id);
         
-        ArgumentNullException.ThrowIfNull(issueDto, "Issue not found");
+        NotFoundException.ThrowIfNull(issueDto, "Issue not found");
 
         return issueDto;
     }
@@ -49,28 +50,47 @@ public class IssueService : IIssueService
         
         await _issueRepository.CreateAsync(issue);
         await _issueRepository.SaveChangesAsync();
+        
+        _logger.LogInformation("Issue successfully created with id {0}", issue.Id);
     }
 
     public async Task<IssueInfoDto> UpdateIssueAsync(int issueId, UpdateIssueDto dto)
     {
         var issue = await _issueRepository.GetByIdAsync(issueId);
 
-        ArgumentNullException.ThrowIfNull(issue, "Issue not found");
+        NotFoundException.ThrowIfNull(issue, "Issue not found");
         
         _mapper.Map(dto, issue);
         
         await _issueRepository.SaveChangesAsync();
+        
+        _logger.LogInformation("Issue successfully updated with id {0}", issue.Id);
 
         return _mapper.Map<IssueInfoDto>(issue);
     }
 
     public async Task<bool> DeleteIssueByIdAsync(int id)
     {
-        return await _issueRepository.DeleteByIdAsync(id) > 0;
+        var result = await _issueRepository.DeleteByIdAsync(id) > 0;
+
+        await _issueRepository.SaveChangesAsync();
+        
+        if(result)
+            _logger.LogInformation("Issue successfully deleted with id {0}", id);
+        else
+            throw new NotFoundException("Issue not found");
+        
+        return result;
     }
 
     public async Task<int> BulkDeleteIssuesAsync(IReadOnlyList<int> ids)
     {
-        return await _issueRepository.BulkDeleteAsync(ids);
+        var result = await _issueRepository.BulkDeleteAsync(ids);
+
+        await _issueRepository.SaveChangesAsync();
+        
+        _logger.LogInformation("Bulk delete issues successfully");
+
+        return result;
     }
 }

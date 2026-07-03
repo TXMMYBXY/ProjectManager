@@ -1,5 +1,6 @@
 using AutoMapper;
 using Microsoft.Extensions.Logging;
+using ProjectManager.Application.Common.Exceptions;
 using ProjectManager.Application.Project;
 using ProjectManager.Application.Project.Dto;
 namespace ProjectManager.Infrastructure.Project;
@@ -37,7 +38,7 @@ public class ProjectService : IProjectService
     {
         var projectDto = await _projectRepository.GetProjectByIdAsync(id);
         
-        ArgumentNullException.ThrowIfNull(projectDto, "Project not found");
+        NotFoundException.ThrowIfNull(projectDto, "Project not found");
         
         return projectDto;
     }
@@ -48,28 +49,47 @@ public class ProjectService : IProjectService
         
         await _projectRepository.CreateAsync(project);
         await _projectRepository.SaveChangesAsync();
+        
+        _logger.LogInformation("Project successfully created with id {0}", project.Id);
     }
 
     public async Task<ProjectInfoDto> UpdateProjectAsync(int projectId, UpdateProjectDto dto)
     {
         var project = await _projectRepository.GetByIdAsync(projectId);
         
-        ArgumentNullException.ThrowIfNull(project, "Project not found");
+        NotFoundException.ThrowIfNull(project, "Project not found");
 
         _mapper.Map(dto, project);
 
         await _projectRepository.SaveChangesAsync();
+        
+        _logger.LogInformation("Project successfully updated with id {0}", projectId);
         
         return _mapper.Map<ProjectInfoDto>(project);
     }
 
     public async Task<bool> DeleteProjectByIdAsync(int id)
     {
-        return await _projectRepository.DeleteByIdAsync(id) > 0;
+        var result = await _projectRepository.DeleteByIdAsync(id) > 0;
+
+        await _projectRepository.SaveChangesAsync();
+        
+        if(result)
+            _logger.LogInformation("Project successfully deleted with id {0}", id);
+        else
+            throw new NotFoundException("Project not found");
+        
+        return result;
     }
 
     public async Task<int> BulkDeleteProjectsAsync(IReadOnlyCollection<int> ids)
     {
-        return await _projectRepository.BulkDeleteAsync(ids);
+        var result = await _projectRepository.BulkDeleteAsync(ids);
+
+        await _projectRepository.SaveChangesAsync();
+        
+        _logger.LogInformation("Bulk delete projects successfully");
+
+        return result;
     }
 }
