@@ -17,7 +17,7 @@ public class EmployeeRepository : BaseRepository<Entities.Models.Employee>, IEmp
         _dbContext = dbContext;
     }
 
-    public async Task<(ICollection<EmployeeItemDto>, int)> GetAllEmployeesAsync(EmployeeFilter filter)
+    public async Task<(IReadOnlyList<EmployeeItemDto>, int)> GetAllEmployeesAsync(EmployeeFilter filter)
     {
         var query = _dbContext.Employees
             .AsNoTracking()
@@ -80,5 +80,10 @@ public class EmployeeRepository : BaseRepository<Entities.Models.Employee>, IEmp
                 }).ToList()
             })
             .SingleOrDefaultAsync();
+    }
+
+    public async Task<bool> IsEmailExists(string email)
+    {
+        return await _dbContext.Employees.AnyAsync(e => e.Email.Equals(email));
     }
 }

@@ -17,7 +17,7 @@ public class ProjectRepository : BaseRepository<Entities.Models.Project>, IProje
         _dbContext = dbContext;
     }
 
-    public async Task<(ICollection<ProjectItemDto>, int)> GetAllProjectsAsync(ProjectFilter filter)
+    public async Task<(IReadOnlyList<ProjectItemDto>, int)> GetAllProjectsAsync(ProjectFilter filter)
     {
         var query = _dbContext.Projects
             .AsNoTracking()

@@ -5,6 +5,7 @@ namespace ProjectManager.Application.Employee;
 
 public interface IEmployeeRepository : IBaseRepository<Entities.Models.Employee>
 {
-    Task<(ICollection<EmployeeItemDto>, int)> GetAllEmployeesAsync(EmployeeFilter filter);
+    Task<(IReadOnlyList<EmployeeItemDto> Employees, int Count)> GetAllEmployeesAsync(EmployeeFilter filter);
     Task<EmployeeInfoDto?> GetEmployeeByIdAsync(int employeeId);
+    Task<bool> IsEmailExists(string email);
 }
