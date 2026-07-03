@@ -1,9 +1,7 @@
 using AutoMapper;
-using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging;
 using ProjectManager.Application.Project;
 using ProjectManager.Application.Project.Dto;
-
 namespace ProjectManager.Infrastructure.Project;
 
 public class ProjectService : IProjectService
@@ -54,15 +52,15 @@ public class ProjectService : IProjectService
 
     public async Task<ProjectInfoDto> UpdateProjectAsync(int projectId, UpdateProjectDto dto)
     {
-        var entity = await _projectRepository.GetByIdAsync(projectId);
+        var project = await _projectRepository.GetByIdAsync(projectId);
         
-        ArgumentNullException.ThrowIfNull(entity, "Project not found");
+        ArgumentNullException.ThrowIfNull(project, "Project not found");
 
-        _mapper.Map(dto, entity);
+        _mapper.Map(dto, project);
 
         await _projectRepository.SaveChangesAsync();
         
-        return _mapper.Map<ProjectInfoDto>(entity);
+        return _mapper.Map<ProjectInfoDto>(project);
     }
 
     public async Task<bool> DeleteProjectByIdAsync(int id)

@@ -17,7 +17,7 @@ public class EmployeeRepository : BaseRepository<Entities.Models.Employee>, IEmp
         _dbContext = dbContext;
     }
 
-    public async Task<(ICollection<EmployeeItemDto>, int)> GetAllEmployeesAsync(EmployeeFilter filter)
+    public async Task<(IReadOnlyList<EmployeeItemDto>, int)> GetAllEmployeesAsync(EmployeeFilter filter)
     {
         var query = _dbContext.Employees
             .AsNoTracking()

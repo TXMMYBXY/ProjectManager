@@ -4,5 +4,5 @@ namespace ProjectManager.Application.Project.Dto;
 
 public class PagedProjectDto : PagedData
 {
-    public ICollection<ProjectItemDto>? Projects { get; set; }
+    public IReadOnlyList<ProjectItemDto>? Projects { get; set; }
 }
