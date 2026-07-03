@@ -17,7 +17,7 @@ public class IssueRepository : BaseRepository<Entities.Models.Issue>, IIssueRepo
         _dbContext = dbContext;
     }
 
-    public async Task<(ICollection<IssueItemDto>, int)> GetAllIssuesAsync(IssueFilter filter)
+    public async Task<(IReadOnlyList<IssueItemDto>, int)> GetAllIssuesAsync(IssueFilter filter)
     {
         var query = _dbContext.Issues
             .AsNoTracking()

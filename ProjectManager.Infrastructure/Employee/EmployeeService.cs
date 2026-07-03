@@ -66,7 +66,7 @@ public class EmployeeService : IEmployeeService
 
     public async Task<bool> DeleteEmployeeByIdAsync(int id)
     {
-        return await _employeeRepository.DeleteAsync(id) > 0;
+        return await _employeeRepository.DeleteByIdAsync(id) > 0;
     }
 
     public async Task<int> BulkDeleteEmployeesAsync(IReadOnlyCollection<int> ids)

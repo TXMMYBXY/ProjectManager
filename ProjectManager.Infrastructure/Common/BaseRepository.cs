@@ -25,7 +25,7 @@ public class BaseRepository<T> : IBaseRepository<T> where T : class
         await _dbContext.Set<T>().AddAsync(entity);
     }
 
-    public async Task<int> DeleteAsync(int entityId)
+    public async Task<int> DeleteByIdAsync(int entityId)
     {
         return await _dbContext.Set<T>()
             .Where(e => EF.Property<int>(e, "Id") == entityId)

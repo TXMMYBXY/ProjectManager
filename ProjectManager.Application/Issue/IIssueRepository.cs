@@ -5,6 +5,6 @@ namespace ProjectManager.Application.Issue;
 
 public interface IIssueRepository : IBaseRepository<Entities.Models.Issue>
 {
-    Task<(ICollection<IssueItemDto>, int)> GetAllIssuesAsync(IssueFilter filter);
+    Task<(IReadOnlyList<IssueItemDto> Issues, int Count)> GetAllIssuesAsync(IssueFilter filter);
     Task<IssueInfoDto?> GetIssueByIdAsync(int issueId);
 }

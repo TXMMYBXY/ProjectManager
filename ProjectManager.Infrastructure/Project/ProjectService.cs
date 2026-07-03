@@ -65,7 +65,7 @@ public class ProjectService : IProjectService
 
     public async Task<bool> DeleteProjectByIdAsync(int id)
     {
-        return await _projectRepository.DeleteAsync(id) > 0;
+        return await _projectRepository.DeleteByIdAsync(id) > 0;
     }
 
     public async Task<int> BulkDeleteProjectsAsync(IReadOnlyCollection<int> ids)
