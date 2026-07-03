@@ -82,7 +82,7 @@ public class ProjectService : IProjectService
         return result;
     }
 
-    public async Task<int> BulkDeleteProjectsAsync(IReadOnlyCollection<int> ids)
+    public async Task<int> BulkDeleteProjectsAsync(IReadOnlyList<int> ids)
     {
         var result = await _projectRepository.BulkDeleteAsync(ids);
 

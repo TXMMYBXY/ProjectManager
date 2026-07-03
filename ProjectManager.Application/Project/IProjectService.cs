@@ -9,5 +9,5 @@ public interface IProjectService
     Task CreateProjectAsync(CreateProjectDto dto);
     Task<ProjectInfoDto> UpdateProjectAsync(int projectId, UpdateProjectDto dto);
     Task<bool> DeleteProjectByIdAsync(int id);
-    Task<int> BulkDeleteProjectsAsync(IReadOnlyCollection<int> ids);
+    Task<int> BulkDeleteProjectsAsync(IReadOnlyList<int> ids);
 }

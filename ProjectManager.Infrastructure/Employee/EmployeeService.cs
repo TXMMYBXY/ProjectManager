@@ -76,7 +76,7 @@ public class EmployeeService : IEmployeeService
         var result = await _employeeRepository.DeleteByIdAsync(id) > 0;
         
         await _employeeRepository.SaveChangesAsync();
-
+        
         if (result)
             _logger.LogInformation("Employee successfully deleted with id {0}", id);
         else
@@ -85,7 +85,7 @@ public class EmployeeService : IEmployeeService
         return result;
     }
 
-    public async Task<int> BulkDeleteEmployeesAsync(IReadOnlyCollection<int> ids)
+    public async Task<int> BulkDeleteEmployeesAsync(IReadOnlyList<int> ids)
     {
         var result = await _employeeRepository.BulkDeleteAsync(ids);
 
