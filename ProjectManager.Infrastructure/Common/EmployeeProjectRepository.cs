@@ -42,16 +42,16 @@ public class EmployeeProjectRepository : BaseRepository<EmployeeProject>, IEmplo
     public async Task AddRangeToProjectAsync(int projectId, IReadOnlyList<int> employeesIds)
     {
         var existing = await _dbContext.EmployeesProjects
-            .Where(x => x.EmployeeId == projectId && employeesIds.Contains(x.ProjectId))
-            .Select(x => x.ProjectId)
+            .Where(x => x.ProjectId == projectId && employeesIds.Contains(x.EmployeeId))
+            .Select(x => x.EmployeeId)
             .ToListAsync();
 
         var newItems = employeesIds
             .Except(existing)
             .Select(id => new EmployeeProject
             {
-                EmployeeId = projectId,
-                ProjectId = id
+                EmployeeId = id,
+                ProjectId = projectId
             });
 
         await _dbContext.EmployeesProjects.AddRangeAsync(newItems);

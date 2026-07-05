@@ -124,6 +124,7 @@ public class ProjectRepository : BaseRepository<Entities.Models.Project>, IProje
 
     public async Task<bool> HasIssues(int id)
     {
-        throw new NotImplementedException();
+        return await _dbContext.Issues
+            .AnyAsync(i => i.ProjectId == id);
     }
 }
