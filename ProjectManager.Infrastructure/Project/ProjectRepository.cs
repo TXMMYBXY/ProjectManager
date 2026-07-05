@@ -115,4 +115,15 @@ public class ProjectRepository : BaseRepository<Entities.Models.Project>, IProje
     {
         return await _dbContext.Projects.AnyAsync(p => p.Id == id);
     }
+
+    public async Task<bool> HasManagers(int id)
+    {
+        return await _dbContext.Projects
+            .AnyAsync(p => p.ProjectManagerId == id);
+    }
+
+    public async Task<bool> HasIssues(int id)
+    {
+        throw new NotImplementedException();
+    }
 }

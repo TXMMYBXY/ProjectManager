@@ -9,4 +9,7 @@ public interface IEmployeeRepository : IBaseRepository<Entities.Models.Employee>
     Task<EmployeeInfoDto?> GetEmployeeByIdAsync(int employeeId);
     Task<bool> IsEmailExists(string email);
     Task<bool> EmployeeExistsAsync(int id);
+    Task<bool> HasManagedProjects(int employeeId);
+    Task<bool> HasIssues(int employeeId);
+    Task<IReadOnlyList<int>> GetEmployeesWithProjectsAsync(IReadOnlyCollection<int> ids);
 }

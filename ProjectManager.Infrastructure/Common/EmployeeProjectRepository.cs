@@ -99,6 +99,24 @@ public class EmployeeProjectRepository : BaseRepository<EmployeeProject>, IEmplo
     public async Task<bool> ExistsAsync(int employeeId, int projectId)
     {
         return await  _dbContext.EmployeesProjects
-            .AnyAsync(j => j.EmployeeId == employeeId && j.ProjectId == projectId);
+            .AnyAsync(ep => ep.EmployeeId == employeeId && ep.ProjectId == projectId);
+    }
+
+    public async Task<bool> HasAnyLinksForEmployeeAsync(int employeeId)
+    {
+        return await _dbContext.EmployeesProjects
+            .AnyAsync(ep => ep.EmployeeId == employeeId);
+    }
+
+    public async Task<bool> HasAnyLinksForProjectAsync(int projectId)
+    {
+        return await _dbContext.EmployeesProjects
+            .AnyAsync(ep => ep.ProjectId == projectId);
+    }
+
+    public Task<bool> HasLinkedProjectsAsync(IReadOnlyCollection<int> employeeIds)
+    {
+        return _dbContext.EmployeesProjects
+            .AnyAsync(ep => employeeIds.Contains(ep.EmployeeId));
     }
 }

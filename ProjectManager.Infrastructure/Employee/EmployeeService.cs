@@ -76,6 +76,10 @@ public class EmployeeService : IEmployeeService
     
     public async Task<int> BulkInsertProjectsToEmployeeAsync(IReadOnlyList<int> projectIds, int employeeId)
     {
+        var employeeExists = await _employeeRepository.EmployeeExistsAsync(employeeId);
+        
+        ConflictException.ThrowIf(!employeeExists, "Employee already is not exists");
+        
         await _employeeProjectRepository.AddRangeToEmployeeAsync(employeeId, projectIds);
         await _employeeProjectRepository.SaveChangesAsync();
         
@@ -101,6 +105,15 @@ public class EmployeeService : IEmployeeService
 
     public async Task<bool> DeleteEmployeeByIdAsync(int id)
     {
+        var hasLinks = await _employeeProjectRepository.HasAnyLinksForEmployeeAsync(id);
+        ConflictException.ThrowIf(hasLinks, "Employee has linked projects. Delete impossible");
+
+        var hasManagedProjects = await _employeeRepository.HasManagedProjects(id);
+        ConflictException.ThrowIf(hasManagedProjects, "Employee has managed projects. Delete impossible");
+
+        var hasIssues = await _employeeRepository.HasIssues(id);
+        ConflictException.ThrowIf(hasIssues, "Employee has issues. Delete impossible");
+        
         var result = await _employeeRepository.DeleteByIdAsync(id) > 0;
         
         if (result)
@@ -113,6 +126,11 @@ public class EmployeeService : IEmployeeService
 
     public async Task<int> BulkDeleteEmployeesAsync(IReadOnlyList<int> ids)
     {
+        var blocked = await _employeeRepository.GetEmployeesWithProjectsAsync(ids);
+        
+        ConflictException.ThrowIf(blocked.Count > 0, 
+            "Some employees cannot be deleted because they are referenced by other entities");
+        
         var result = await _employeeRepository.BulkDeleteAsync(ids);
 
         await _employeeRepository.SaveChangesAsync();

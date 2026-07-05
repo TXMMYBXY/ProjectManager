@@ -85,7 +85,7 @@ public class EmployeeController : ControllerBase
     public async Task<ActionResult<int>> BulkDeleteProjectsFromEmployee([FromBody] BulkDeleteRequest request,
         [FromRoute] int employeeId)
     {
-        var response = await _employeeService.BulkInsertProjectsToEmployeeAsync(request.Ids, employeeId);
+        var response = await _employeeService.BulkDeleteProjectsFromEmployeeAsync(request.Ids, employeeId);
 
         return Ok(response);
     }

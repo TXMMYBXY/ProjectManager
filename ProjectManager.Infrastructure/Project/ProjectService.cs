@@ -77,7 +77,7 @@ public class ProjectService : IProjectService
         await _employeeProjectRepository.AddRangeToProjectAsync(projectId, employeeIds);
         await _employeeProjectRepository.SaveChangesAsync();
         
-        _logger.LogInformation("Bulk insert projects successfully");
+        _logger.LogInformation("Bulk insert employees successfully");
         
         return employeeIds.Count;
     }
@@ -99,6 +99,9 @@ public class ProjectService : IProjectService
 
     public async Task<bool> DeleteProjectByIdAsync(int id)
     {
+        var hasLinks = await _employeeProjectRepository.HasAnyLinksForProjectAsync(id);
+        ConflictException.ThrowIf(hasLinks, "Project has linked employees. Delete impossible");
+        
         var result = await _projectRepository.DeleteByIdAsync(id) > 0;
 
         if(result)
@@ -134,7 +137,7 @@ public class ProjectService : IProjectService
     {
         var exists = await _projectRepository.ProjectExistsAsync(projectId);
         
-        ConflictException.ThrowIf(!exists, "Employee not found");
+        ConflictException.ThrowIf(!exists, "Project not found");
         
         return await _employeeProjectRepository.DeleteRangeEmployeesAsync(projectId, employeesIds);
     }
