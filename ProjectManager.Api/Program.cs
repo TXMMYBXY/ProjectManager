@@ -18,6 +18,7 @@ builder.Services.AddInfrastructure(builder.Configuration);
 var app = builder.Build();
 
 app.UseErrorHandling();
+app.UseCors("AllowAll");
 app.UseHttpsRedirection();
 app.MapControllers();
 
@@ -27,12 +28,12 @@ if (app.Environment.IsDevelopment())
     app.MapScalarApiReference();
 }
 
-// using (var scope = app.Services.CreateScope())
-// {
-//     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-//     
-//     db.Database.Migrate(); 
-// }
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    
+    db.Database.Migrate(); 
+}
 
 app.Run();
 
