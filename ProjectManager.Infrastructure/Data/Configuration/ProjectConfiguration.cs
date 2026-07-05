@@ -23,7 +23,7 @@ public class ProjectConfiguration : IEntityTypeConfiguration<Entities.Models.Pro
             .IsRequired();
         
         builder
-            .Property(p => p.CompanyExecuter)
+            .Property(p => p.CompanyExecutor)
             .HasMaxLength(100)
             .IsRequired();
 

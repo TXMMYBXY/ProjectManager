@@ -1,9 +1,9 @@
 using ProjectManager.Application.Issue.Dto;
 using ProjectManager.Application.Project.Dto;
 
-namespace ProjectManager.Application.Employee.Dto;
+namespace ProjectManager.Api.Features.Employee.Responses;
 
-public class EmployeeInfoDto
+public class EmployeeInfoResponse
 {
     public int Id { get; set; }
     public string FirstName { get; set; }

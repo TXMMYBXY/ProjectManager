@@ -6,7 +6,7 @@ public class Project : EntityBase
     
     public required string CompanyCustomer { get; set; }
 
-    public required string CompanyExecuter { get; set; }
+    public required string CompanyExecutor { get; set; }
 
     public DateTime StartDate { get; set; } = DateTime.UtcNow;
     public DateTime? FinishDate { get; set; }

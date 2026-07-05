@@ -7,10 +7,12 @@ public class ProjectMappingProfile : Profile
 {
     public ProjectMappingProfile()
     {
+        CreateMap<CreateProjectDto, Entities.Models.Project>();
+        
         CreateMap<UpdateProjectDto, Entities.Models.Project>()
             .ForAllMembers(opts=>
                 opts.Condition((src, dest, srcMember) => srcMember != null));
 
-        CreateMap<CreateProjectDto, Entities.Models.Project>();
+        CreateMap<Entities.Models.Project, ProjectInfoDto>();
     }
 }

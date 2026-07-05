@@ -6,6 +6,7 @@ using ProjectManager.Application.Employee;
 using ProjectManager.Application.Issue;
 using ProjectManager.Application.Project;
 using ProjectManager.Infrastructure.Common;
+using ProjectManager.Infrastructure.Common.MappingProfile;
 using ProjectManager.Infrastructure.Configuration;
 using ProjectManager.Infrastructure.Data;
 using ProjectManager.Infrastructure.Employee;
@@ -18,6 +19,10 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
+        services.AddAutoMapper(typeof(ProjectMappingProfile).Assembly);
+        services.AddAutoMapper(typeof(EmployeeMappingProfile).Assembly);
+        services.AddAutoMapper(typeof(IssueMappingProfile).Assembly);
+        
         services.AddScoped<IProjectService, ProjectService>();
         services.AddScoped<IEmployeeService, EmployeeService>();
         services.AddScoped<IIssueService, IssueService>();

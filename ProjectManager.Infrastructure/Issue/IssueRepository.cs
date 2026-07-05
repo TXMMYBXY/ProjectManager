@@ -40,7 +40,7 @@ public class IssueRepository : BaseRepository<Entities.Models.Issue>, IIssueRepo
                     Id = i.Project.Id,
                     Title = i.Project.Title,
                     CompanyCustomer = i.Project.CompanyCustomer,
-                    CompanyExecuter = i.Project.CompanyExecuter,
+                    CompanyExecuter = i.Project.CompanyExecutor,
                     StartDate = i.Project.StartDate,
                     FinishDate = i.Project.FinishDate,
                     Priority = i.Project.Priority
@@ -82,7 +82,7 @@ public class IssueRepository : BaseRepository<Entities.Models.Issue>, IIssueRepo
                     Id = i.Project.Id,
                     Title = i.Project.Title,
                     CompanyCustomer = i.Project.CompanyCustomer,
-                    CompanyExecuter = i.Project.CompanyExecuter,
+                    CompanyExecuter = i.Project.CompanyExecutor,
                     StartDate = i.Project.StartDate,
                     FinishDate = i.Project.FinishDate,
                     Priority = i.Project.Priority
