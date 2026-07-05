@@ -45,7 +45,7 @@ public class AccountService : IAccountService
         if (!result.Succeeded)
             throw new Exception(string.Join(", ", result.Errors.Select(e => e.Description)));
         
-        await _userManager.AddToRoleAsync(employee, Enum.GetName(UserRole.Employee));
+        await _userManager.AddToRoleAsync(employee, "Employee");
         
         _logger.LogInformation("New account created successfully");
         

@@ -1,4 +1,3 @@
-using System.Security.Claims;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using ProjectManager.Api.Features.Account.Requests;
@@ -26,9 +25,11 @@ public class AccountController : ControllerBase
     {
         var requestDto = _mapper.Map<RegisterDto>(request);
         
-        var response = await _accountService.RegisterAsync(requestDto);
+        var responseDto = await _accountService.RegisterAsync(requestDto);
+
+        var response = _mapper.Map<RegisterResponse>(responseDto);
         
-        return Ok(response.Token);
+        return Ok(response);
     }
     
     [HttpPost("login")]
@@ -36,9 +37,11 @@ public class AccountController : ControllerBase
     {
         var requestDto = _mapper.Map<LoginDto>(request);
         
-        var response = await _accountService.LoginAsync(requestDto);
+        var responseDto = await _accountService.LoginAsync(requestDto);
+
+        var response = _mapper.Map<LoginResponse>(responseDto);
         
-        return Ok(response.Token);
+        return Ok(response);
     }
 
     [HttpPost("logout")]
