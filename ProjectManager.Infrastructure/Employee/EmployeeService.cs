@@ -1,5 +1,6 @@
 using AutoMapper;
 using Microsoft.Extensions.Logging;
+using ProjectManager.Application.Common;
 using ProjectManager.Application.Common.Exceptions;
 using ProjectManager.Application.Employee;
 using ProjectManager.Application.Employee.Dto;
@@ -11,15 +12,18 @@ public class EmployeeService : IEmployeeService
     private readonly ILogger<EmployeeService> _logger;
     private readonly  IMapper _mapper;
     private readonly IEmployeeRepository _employeeRepository;
+    private readonly IEmployeeProjectRepository _employeeProjectRepository;
 
     public EmployeeService(
         ILogger<EmployeeService> logger,
         IMapper mapper,
-        IEmployeeRepository employeeRepository)
+        IEmployeeRepository employeeRepository,
+        IEmployeeProjectRepository employeeProjectRepository)
     {
         _logger = logger;
         _mapper = mapper;
         _employeeRepository = employeeRepository;
+        _employeeProjectRepository = employeeProjectRepository;
     }
     
     public async Task<PagedEmployeeDto> GetAllEmployeesAsync(EmployeeFilter filter)
@@ -56,6 +60,30 @@ public class EmployeeService : IEmployeeService
         _logger.LogInformation("Employee successfully created with id {0}", employee.Id);
     }
 
+    public async Task<EmployeeInfoDto> AddProjectToEmployeeAsync(int projectId, int employeeId)
+    {
+        var exists = await _employeeProjectRepository.ExistsAsync(employeeId, projectId);
+        
+        ConflictException.ThrowIf(exists, "Project already assigned to employee");
+        
+        await _employeeProjectRepository.AddAsync(employeeId, projectId);
+        await _employeeProjectRepository.SaveChangesAsync();
+        
+        var employeeDto = await _employeeRepository.GetEmployeeByIdAsync(employeeId);
+
+        return employeeDto;
+    }
+    
+    public async Task<int> BulkInsertProjectsToEmployeeAsync(IReadOnlyList<int> projectIds, int employeeId)
+    {
+        await _employeeProjectRepository.AddRangeToEmployeeAsync(employeeId, projectIds);
+        await _employeeProjectRepository.SaveChangesAsync();
+        
+        _logger.LogInformation("Bulk insert projects successfully");
+        
+        return projectIds.Count;
+    }
+
     public async Task<EmployeeInfoDto> UpdateEmployeeAsync(int employeeId, UpdateEmployeeDto dto)
     {
         var employee = await _employeeRepository.GetByIdAsync(employeeId);
@@ -75,8 +103,6 @@ public class EmployeeService : IEmployeeService
     {
         var result = await _employeeRepository.DeleteByIdAsync(id) > 0;
         
-        await _employeeRepository.SaveChangesAsync();
-        
         if (result)
             _logger.LogInformation("Employee successfully deleted with id {0}", id);
         else
@@ -94,5 +120,26 @@ public class EmployeeService : IEmployeeService
         _logger.LogInformation("Bulk delete employees successfully");
 
         return result;
+    }
+
+    public async Task<bool> DeleteProjectFromEmployeeAsync(int projectId, int employeeId)
+    {
+        var result = await _employeeProjectRepository.RemoveAsync(employeeId, projectId) > 0;
+        
+        if (result)
+            _logger.LogInformation("Employee {0} unlinked from project {1} successfully", employeeId, projectId);
+        else
+            throw new NotFoundException("Employee or project not found");
+        
+        return result;
+    }
+
+    public async Task<int> BulkDeleteProjectsFromEmployeeAsync(IReadOnlyList<int> projectIds, int employeeId)
+    {
+        var exists = await _employeeRepository.EmployeeExistsAsync(employeeId);
+
+        ConflictException.ThrowIf(!exists, "Employee not found");
+        
+        return await _employeeProjectRepository.DeleteRangeProjectsAsync(employeeId, projectIds);
     }
 }

@@ -8,4 +8,5 @@ public interface IEmployeeRepository : IBaseRepository<Entities.Models.Employee>
     Task<(IReadOnlyList<EmployeeItemDto> Employees, int Count)> GetAllEmployeesAsync(EmployeeFilter filter);
     Task<EmployeeInfoDto?> GetEmployeeByIdAsync(int employeeId);
     Task<bool> IsEmailExists(string email);
+    Task<bool> EmployeeExistsAsync(int id);
 }

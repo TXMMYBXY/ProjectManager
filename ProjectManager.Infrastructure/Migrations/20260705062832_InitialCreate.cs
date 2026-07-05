@@ -57,14 +57,12 @@ namespace ProjectManager.Infrastructure.Migrations
                 name: "EmployeeJoinProject",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
                     EmployeeId = table.Column<int>(type: "int", nullable: false),
                     ProjectId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_EmployeeJoinProject", x => x.Id);
+                    table.PrimaryKey("PK_EmployeeJoinProject", x => new { x.EmployeeId, x.ProjectId });
                     table.ForeignKey(
                         name: "FK_EmployeeJoinProject_Employees_EmployeeId",
                         column: x => x.EmployeeId,
@@ -115,11 +113,6 @@ namespace ProjectManager.Infrastructure.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
-
-            migrationBuilder.CreateIndex(
-                name: "IX_EmployeeJoinProject_EmployeeId",
-                table: "EmployeeJoinProject",
-                column: "EmployeeId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_EmployeeJoinProject_ProjectId",

@@ -14,6 +14,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<Entities.Models.Employee> Employees { get; set; }
     public DbSet<Entities.Models.Project> Projects { get; set; }
     public DbSet<Entities.Models.Issue> Issues { get; set; }
+    public DbSet<EmployeeProject> EmployeesProjects { get; set; }
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

@@ -34,6 +34,7 @@ public class EmployeeRepository : BaseRepository<Entities.Models.Employee>, IEmp
                 FirstName = e.FirstName,
                 LastName = e.LastName,
                 Patronymic = e.Patronymic,
+                Email = e.Email
             })
             .ApplyPagination(filter);
 
@@ -85,5 +86,10 @@ public class EmployeeRepository : BaseRepository<Entities.Models.Employee>, IEmp
     public async Task<bool> IsEmailExists(string email)
     {
         return await _dbContext.Employees.AnyAsync(e => e.Email.Equals(email));
+    }
+
+    public async Task<bool> EmployeeExistsAsync(int id)
+    {
+        return await _dbContext.Employees.AnyAsync(e => e.Id == id);
     }
 }

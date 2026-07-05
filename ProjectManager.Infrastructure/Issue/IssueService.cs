@@ -76,8 +76,6 @@ public class IssueService : IIssueService
     {
         var result = await _issueRepository.DeleteByIdAsync(id) > 0;
 
-        await _issueRepository.SaveChangesAsync();
-        
         if(result)
             _logger.LogInformation("Issue successfully deleted with id {0}", id);
         else
@@ -90,8 +88,6 @@ public class IssueService : IIssueService
     {
         var result = await _issueRepository.BulkDeleteAsync(ids);
 
-        await _issueRepository.SaveChangesAsync();
-        
         _logger.LogInformation("Bulk delete issues successfully");
 
         return result;

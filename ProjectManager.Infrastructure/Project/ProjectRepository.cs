@@ -110,4 +110,9 @@ public class ProjectRepository : BaseRepository<Entities.Models.Project>, IProje
             })
             .SingleOrDefaultAsync();
     }
+
+    public async Task<bool> ProjectExistsAsync(int id)
+    {
+        return await _dbContext.Projects.AnyAsync(p => p.Id == id);
+    }
 }

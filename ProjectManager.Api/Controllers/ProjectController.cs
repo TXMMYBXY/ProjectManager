@@ -1,5 +1,6 @@
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using ProjectManager.Api.Features.Employee.Requests;
 using ProjectManager.Api.Features.Project.Requests;
 using ProjectManager.Api.Features.Project.Responses;
 using ProjectManager.Application.Project;
@@ -51,7 +52,44 @@ public class ProjectController : ControllerBase
 
         return Created();
     }
+    
+    [HttpPost("insert/{projectId}/{employeeId:int}")]
+    public async Task<ActionResult<ProjectInfoResponse>> AddEmployeeToProject([FromRoute] int employeeId, 
+        [FromRoute] int projectId)
+    {
+        var responseDto = await _projectService.AssignEmployeeToProjectAsync(employeeId, projectId);
 
+        var response = _mapper.Map<ProjectInfoResponse>(responseDto);
+        
+        return Ok(response);
+    }
+
+    [HttpPost("bulk-insert/{projectId:int}")]
+    public async Task<ActionResult<int>> BulkInsertEmployeesToProject([FromBody] BulkInsertRequest request,
+        [FromRoute] int projectId)
+    {
+        var response = await _projectService.BulkInsertEmployeesToProjectAsync(request.Ids, projectId);
+
+        return Ok(response);
+    }
+
+    [HttpPost("delete/{projectId}/{employeeId:int}")]
+    public async Task<ActionResult<bool>> DeleteEmployeeFromProject([FromRoute] int employeeId, [FromRoute] int projectId)
+    {
+        var response = await _projectService.DeleteEmployeeFromProjectAsync(projectId, employeeId);
+
+        return Ok(response);
+    }
+
+    [HttpPost("bulk-delete/{projectId:int}")]
+    public async Task<ActionResult<int>> BulkDeleteProjectsFromEmployee([FromBody] BulkDeleteRequest request,
+        [FromRoute] int projectId)
+    {
+        var response = await _projectService.BulkDeleteEmployeesFromProjectAsync(request.Ids, projectId);
+
+        return Ok(response);
+    }
+    
     [HttpPost("bulk-delete")]
     public async Task<ActionResult<int>> BulkDeleteProjects([FromBody] BulkDeleteRequest request)
     {
@@ -61,7 +99,8 @@ public class ProjectController : ControllerBase
     }
 
     [HttpPatch("{id:int}")]
-    public async Task<ActionResult<UpdateProjectResponse>> UpdateProjectResponse([FromRoute] int id, [FromBody] UpdateProjectRequest request)
+    public async Task<ActionResult<UpdateProjectResponse>> UpdateProjectResponse([FromRoute] int id, 
+        [FromBody] UpdateProjectRequest request)
     {
         var requestDto = _mapper.Map<UpdateProjectDto>(request);
         

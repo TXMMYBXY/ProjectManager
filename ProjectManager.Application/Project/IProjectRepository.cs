@@ -7,4 +7,5 @@ public interface IProjectRepository : IBaseRepository<Entities.Models.Project>
 {
     Task<(IReadOnlyList<ProjectItemDto> Projects, int Count)> GetAllProjectsAsync(ProjectFilter filter);
     Task<ProjectInfoDto?> GetProjectByIdAsync(int projectId);
+    Task<bool> ProjectExistsAsync(int id);
 }
