@@ -1,4 +1,4 @@
-git ausing ProjectManager.Application.Project;
+using ProjectManager.Application.Project;
 
 namespace ProjectManager.Api.Features.Project.Requests;
 
