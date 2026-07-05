@@ -1,6 +1,6 @@
 namespace ProjectManager.Entities.Models;
 
-public class EmployeeProject : EntityBase
+public class EmployeeProject
 {
     public int EmployeeId { get; set; }
     public Employee Employee { get; set; }

@@ -10,18 +10,18 @@ public class EmployeeProjectConfiguration : IEntityTypeConfiguration<EmployeePro
     {
         builder.ToTable("EmployeeJoinProject");
 
-        builder.HasKey(j => j.Id);
+        builder.HasKey(x => new { x.EmployeeId, x.ProjectId });
         
         builder
-            .HasOne(j => j.Employee)
+            .HasOne(ep => ep.Employee)
             .WithMany(e => e.EmployeeProjects)
-            .HasForeignKey(x => x.EmployeeId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .HasForeignKey(ep => ep.EmployeeId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder
-            .HasOne(j => j.Project)
+            .HasOne(ep => ep.Project)
             .WithMany(p => p.EmployeeProjects)
-            .HasForeignKey(x => x.ProjectId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .HasForeignKey(ep => ep.ProjectId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

@@ -34,6 +34,7 @@ public class EmployeeRepository : BaseRepository<Entities.Models.Employee>, IEmp
                 FirstName = e.FirstName,
                 LastName = e.LastName,
                 Patronymic = e.Patronymic,
+                Email = e.Email
             })
             .ApplyPagination(filter);
 
@@ -85,5 +86,35 @@ public class EmployeeRepository : BaseRepository<Entities.Models.Employee>, IEmp
     public async Task<bool> IsEmailExists(string email)
     {
         return await _dbContext.Employees.AnyAsync(e => e.Email.Equals(email));
+    }
+
+    public async Task<bool> EmployeeExistsAsync(int id)
+    {
+        return await _dbContext.Employees
+            .Where(e => e.Id == id)
+            .AnyAsync();
+    }
+
+    public async Task<bool> HasManagedProjects(int employeeId)
+    {
+        return await _dbContext.Projects
+            .AnyAsync(p => p.ProjectManagerId == employeeId);
+    }
+
+    public async Task<bool> HasIssues(int employeeId)
+    {
+        return await _dbContext.Issues.AnyAsync(i =>
+            i.AuthorId == employeeId ||
+            i.ExecutorId == employeeId);
+    }
+
+    public async Task<IReadOnlyList<int>> GetEmployeesWithProjectsAsync(IReadOnlyCollection<int> ids)
+    {
+        return await _dbContext.EmployeesProjects
+            .AsNoTracking()
+            .Where(ep => ids.Contains(ep.EmployeeId))
+            .Select(ep => ep.EmployeeId)
+            .Distinct()
+            .ToListAsync();
     }
 }

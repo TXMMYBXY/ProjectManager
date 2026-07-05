@@ -1,8 +1,8 @@
 using System.Text.Json.Serialization;
 
-namespace ProjectManager.Api.Features.Project.Requests;
+namespace ProjectManager.Api.Features.Employee.Requests;
 
-public class BulkDeleteRequest
+public class BulkInsertRequest
 {
     [JsonPropertyName("ids")]
     public IReadOnlyList<int> Ids { get; set; }

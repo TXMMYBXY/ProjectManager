@@ -53,6 +53,43 @@ public class EmployeeController : ControllerBase
         return Created();
     }
 
+    [HttpPost("insert/{employeeId:int}/{projectId}")]
+    public async Task<ActionResult<EmployeeInfoResponse>> AddProjectToEmployee([FromRoute] int projectId, 
+        [FromRoute] int employeeId)
+    {
+        var responseDto = await _employeeService.AddProjectToEmployeeAsync(projectId, employeeId);
+
+        var response = _mapper.Map<EmployeeInfoResponse>(responseDto);
+        
+        return Ok(response);
+    }
+
+    [HttpPost("bulk-insert/{employeeId:int}")]
+    public async Task<ActionResult<int>> BulkInsertProjectsToEmployee([FromBody] BulkInsertRequest request,
+        [FromRoute] int employeeId)
+    {
+        var response = await _employeeService.BulkInsertProjectsToEmployeeAsync(request.Ids, employeeId);
+
+        return Ok(response);
+    }
+
+    [HttpPost("delete/{employeeId:int}/{projectId}")]
+    public async Task<ActionResult<bool>> DeleteProjectFromEmployee([FromRoute] int projectId, [FromRoute] int employeeId)
+    {
+        var response = await _employeeService.DeleteProjectFromEmployeeAsync(projectId, employeeId);
+
+        return Ok(response);
+    }
+
+    [HttpPost("bulk-delete/{employeeId:int}")]
+    public async Task<ActionResult<int>> BulkDeleteProjectsFromEmployee([FromBody] BulkDeleteRequest request,
+        [FromRoute] int employeeId)
+    {
+        var response = await _employeeService.BulkDeleteProjectsFromEmployeeAsync(request.Ids, employeeId);
+
+        return Ok(response);
+    }
+
     [HttpPost("bulk-delete")]
     public async Task<ActionResult<int>> BulkDeleteEmployees([FromBody] BulkDeleteRequest request)
     {

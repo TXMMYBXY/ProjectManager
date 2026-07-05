@@ -31,6 +31,7 @@ public static class DependencyInjection
         services.AddScoped<IProjectRepository, ProjectRepository>();
         services.AddScoped<IEmployeeRepository, EmployeeRepository>();
         services.AddScoped<IIssueRepository, IssueRepository>();
+        services.AddScoped<IEmployeeProjectRepository, EmployeeProjectRepository>();
         
         var dataBaseConnectionSettings =
             configuration.GetSection("DataBaseConnectionSettings").Get<DataBaseConnectionSettings>();
