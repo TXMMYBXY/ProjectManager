@@ -1,15 +1,15 @@
-using ProjectManager.Entities.Enums;
+using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Identity;
 
 namespace ProjectManager.Entities.Models;
 
-public class Employee : EntityBase
+public class Employee : IdentityUser<int>
 {
     public string FirstName { get; set; }
     public string LastName { get; set; }
     public string? Patronymic { get; set; }
     public string Email { get; set; }
     
-    public UserRole Role { get; set; } = UserRole.Employee;
     
     public ICollection<Project> ManagedProjects { get; set; } = new List<Project>();
     public ICollection<EmployeeProject> EmployeeProjects { get; set; } = new List<EmployeeProject>();

@@ -1,10 +1,11 @@
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using ProjectManager.Entities.Models;
-using ProjectManager.Infrastructure.Data.Configuration;
 
 namespace ProjectManager.Infrastructure.Data;
 
-public class ApplicationDbContext : DbContext
+public class ApplicationDbContext : IdentityDbContext<Entities.Models.Employee, IdentityRole<int>, int>
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> dbContextOptions) : base(dbContextOptions)
     {
@@ -19,6 +20,30 @@ public class ApplicationDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
+
+        var roles = new List<IdentityRole<int>>
+        {
+            new ()
+            {
+                Id = 1,
+                Name = "Director",
+                NormalizedName = "DIRECTOR"
+            },
+            new ()
+            {
+                Id = 2,
+                Name = "Manager",
+                NormalizedName = "MANAGER"
+            },
+            new ()
+            {
+                Id = 3,
+                Name = "Employee",
+                NormalizedName = "EMPLOYEE"
+            }
+        };
+        
+        modelBuilder.Entity<IdentityRole<int>>().HasData(roles);
         
         base.OnModelCreating(modelBuilder);
     }

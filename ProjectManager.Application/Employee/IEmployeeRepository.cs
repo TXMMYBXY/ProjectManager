@@ -12,4 +12,5 @@ public interface IEmployeeRepository : IBaseRepository<Entities.Models.Employee>
     Task<bool> HasManagedProjects(int employeeId);
     Task<bool> HasIssues(int employeeId);
     Task<IReadOnlyList<int>> GetEmployeesWithProjectsAsync(IReadOnlyCollection<int> ids);
+    Task<Entities.Models.Employee?> GetEntityByEmail(string email);
 }

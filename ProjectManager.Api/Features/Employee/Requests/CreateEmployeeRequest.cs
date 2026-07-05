@@ -15,6 +15,7 @@ public class CreateEmployeeRequest
     [JsonPropertyName("patronymic")]
     public string? Patronymic { get; set; }
     [Required]
+    [EmailAddress]
     [JsonPropertyName("email")]
     public string Email { get; set; }
     [JsonPropertyName("role")]

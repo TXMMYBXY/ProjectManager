@@ -1,3 +1,5 @@
+using ProjectManager.Api.Features.Account;
+
 namespace ProjectManager.Api;
 
 public static class DependencyInjection
@@ -17,6 +19,11 @@ public static class DependencyInjection
         services.AddAutoMapper(typeof(Program));
         services.AddControllers();
         services.AddHttpContextAccessor();
+        
+        services.AddOpenApi(options =>
+        {
+            options.AddDocumentTransformer<BearerSecuritySchemeTransformer>();
+        });
         
         return services;
     }

@@ -1,4 +1,6 @@
+using System.Security.Claims;
 using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ProjectManager.Api.Features.Issue.Requests;
 using ProjectManager.Api.Features.Issue.Responses;
@@ -10,6 +12,7 @@ namespace ProjectManager.Api.Controllers;
 
 [ApiController]
 [Route("api/issue")]
+[Authorize]
 public class IssueController : ControllerBase
 {
     private readonly IMapper _mapper;
@@ -44,9 +47,12 @@ public class IssueController : ControllerBase
     }
     
     [HttpPost]
+    [Authorize(Roles = "Director")]
     public async Task<ActionResult> CreateIssue([FromBody] CreateIssueRequest request)
     {
         var requestDto = _mapper.Map<CreateIssueDto>(request);
+        
+        requestDto.AuthorId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
         
         await _issueService.CreateIssueAsync(requestDto);
 

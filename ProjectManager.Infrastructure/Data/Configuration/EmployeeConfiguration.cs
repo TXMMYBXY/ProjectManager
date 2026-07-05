@@ -27,11 +27,6 @@ public class EmployeeConfiguration : IEntityTypeConfiguration<Entities.Models.Em
             .HasMaxLength(50);
 
         builder
-            .Property(p => p.Role)
-            .HasColumnType("tinyint")
-            .IsRequired();
-
-        builder
             .HasIndex(e => e.Email)
             .IsUnique();
         

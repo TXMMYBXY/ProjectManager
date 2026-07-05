@@ -117,4 +117,9 @@ public class EmployeeRepository : BaseRepository<Entities.Models.Employee>, IEmp
             .Distinct()
             .ToListAsync();
     }
+
+    public async Task<Entities.Models.Employee?> GetEntityByEmail(string email)
+    {
+        return _dbContext.Employees.FirstOrDefault(e => e.Equals(email));
+    }
 }

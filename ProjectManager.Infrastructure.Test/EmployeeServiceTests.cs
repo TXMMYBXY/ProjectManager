@@ -27,6 +27,10 @@ public class EmployeeServiceTests
         public Task<bool> HasManagedProjects(int employeeId) => Task.FromResult(false);
         public Task<bool> HasIssues(int employeeId) => Task.FromResult(false);
         public Task<IReadOnlyList<int>> GetEmployeesWithProjectsAsync(IReadOnlyCollection<int> ids) => Task.FromResult((IReadOnlyList<int>)Array.Empty<int>());
+        public async Task<Entities.Models.Employee?> GetEntityByEmail(string email)
+        {
+            throw new NotImplementedException();
+        }
 
         public Task CreateAsync(Entities.Models.Employee entity) => CreateHandler != null ? CreateHandler(entity) : Task.CompletedTask;
         public Task<Entities.Models.Employee?> GetByIdAsync(int id) => GetByIdEntityHandler != null ? GetByIdEntityHandler(id) : Task.FromResult<Entities.Models.Employee?>(null);
