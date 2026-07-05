@@ -20,6 +20,6 @@ public class IssueMappingProfile : Profile
         
         CreateMap<UpdateIssueRequest, UpdateIssueDto>();
         
-        CreateMap<UpdateIssueDto, UpdateIssueResponse>();
+        CreateMap<IssueInfoDto, UpdateIssueResponse>();
     }
 }

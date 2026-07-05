@@ -20,6 +20,6 @@ public class EmployeeMappingProfile : Profile
         
         CreateMap<UpdateEmployeeRequest, UpdateEmployeeDto>();
         
-        CreateMap<UpdateEmployeeDto, UpdateEmployeeResponse>();
+        CreateMap<EmployeeInfoDto, UpdateEmployeeResponse>();
     }
 }

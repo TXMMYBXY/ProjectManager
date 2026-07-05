@@ -12,5 +12,7 @@ public class EmployeeMappingProfile : Profile
         CreateMap<UpdateEmployeeDto, Entities.Models.Employee>()
             .ForAllMembers(opts=>
                 opts.Condition((src, dest, srcMember) => srcMember != null));
+
+        CreateMap<Entities.Models.Employee, EmployeeInfoDto>();
     }
 }

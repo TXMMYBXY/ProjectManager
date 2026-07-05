@@ -11,7 +11,7 @@ public class EmployeeInfoDto
     public string? Patronymic { get; set; }
     public string Email { get; set; }
 
-    public ICollection<ProjectItemDto> Projects { get; set; }
-    public ICollection<IssueItemDto> AuthoredIssues { get; set; }
-    public ICollection<IssueItemDto> ExecutedIssues { get; set; }
+    public IReadOnlyList<ProjectItemDto> Projects { get; set; }
+    public IReadOnlyList<IssueItemDto> AuthoredIssues { get; set; }
+    public IReadOnlyList<IssueItemDto> ExecutedIssues { get; set; }
 }
