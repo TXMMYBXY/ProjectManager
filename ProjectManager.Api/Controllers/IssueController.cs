@@ -2,11 +2,13 @@ using System.Security.Claims;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ProjectManager.Api.Features.Account.Auth;
 using ProjectManager.Api.Features.Issue.Requests;
 using ProjectManager.Api.Features.Issue.Responses;
 using ProjectManager.Api.Features.Project.Requests;
 using ProjectManager.Application.Issue;
 using ProjectManager.Application.Issue.Dto;
+using ProjectManager.Entities.Enums;
 
 namespace ProjectManager.Api.Controllers;
 
@@ -47,7 +49,7 @@ public class IssueController : ControllerBase
     }
     
     [HttpPost]
-    [Authorize(Roles = "Director")]
+    [Authorize(Policy = Policy.DirectorAndManager)]
     public async Task<ActionResult> CreateIssue([FromBody] CreateIssueRequest request)
     {
         var requestDto = _mapper.Map<CreateIssueDto>(request);
@@ -60,6 +62,7 @@ public class IssueController : ControllerBase
     }
 
     [HttpPost("bulk-delete")]
+    [Authorize(Policy = Policy.DirectorAndManager)]
     public async Task<ActionResult<int>> BulkDeleteIssues([FromBody] BulkDeleteRequest request)
     {
         var response = await _issueService.BulkDeleteIssuesAsync(request.Ids);
@@ -68,7 +71,8 @@ public class IssueController : ControllerBase
     }
 
     [HttpPatch("{id:int}")]
-    public async Task<ActionResult<UpdateIssueResponse>> UpdateResponse([FromRoute] int id,
+    [Authorize(Policy = Policy.DirectorAndManager)]
+    public async Task<ActionResult<UpdateIssueResponse>> UpdateIssue([FromRoute] int id,
         [FromBody] UpdateIssueRequest request)
     {
         var requestDto = _mapper.Map<UpdateIssueDto>(request);
@@ -81,6 +85,7 @@ public class IssueController : ControllerBase
     }
 
     [HttpDelete("{id:int}")]
+    [Authorize(Policy = Policy.DirectorAndManager)]
     public async Task<ActionResult> DeleteIssueById([FromRoute] int id)
     {
         await _issueService.DeleteIssueByIdAsync(id);

@@ -17,7 +17,7 @@ public class JwtService : IJwtService
         _jwtSettings = jwtSettings.Value;
     }
     
-    public string GenerateToken(Entities.Models.Employee employee)
+    public string GenerateToken(Entities.Models.Employee employee, string roleName)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
         var key = Encoding.ASCII.GetBytes(_jwtSettings.SecretKey);
@@ -26,8 +26,21 @@ public class JwtService : IJwtService
         {
             new(JwtRegisteredClaimNames.Sub, employee.Id.ToString()),
             new(JwtRegisteredClaimNames.Email, employee.Email!),
-            new(ClaimTypes.NameIdentifier, employee.Id.ToString())
+            new(ClaimTypes.NameIdentifier, employee.Id.ToString()),
+            new(ClaimTypes.Role, roleName)
         };
+
+        if (int.TryParse(roleName, out var numericRole))
+        {
+            claims.Add(new Claim("roleId", numericRole.ToString()));
+        }
+        else
+        {
+            if (Enum.TryParse<ProjectManager.Entities.Enums.UserRole>(roleName, out var roleEnum))
+            {
+                claims.Add(new Claim("roleId", ((int)roleEnum).ToString()));
+            }
+        }
 
         var jwtDescriptor = new SecurityTokenDescriptor
         {

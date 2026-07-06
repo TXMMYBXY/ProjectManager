@@ -1,8 +1,11 @@
+using System.Linq.Expressions;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
+using ProjectManager.Application.Common;
 using ProjectManager.Application.Common.Exceptions;
 using ProjectManager.Application.Issue;
 using ProjectManager.Application.Issue.Dto;
+using ProjectManager.Entities.Enums;
 
 namespace ProjectManager.Infrastructure.Issue;
 
@@ -10,21 +13,35 @@ public class IssueService : IIssueService
 {
     private readonly ILogger<IssueService> _logger;
     private readonly IMapper _mapper;
+    private readonly ICurrentUser _currentUser;
     private readonly IIssueRepository _issueRepository;
 
     public IssueService(
         ILogger<IssueService> logger,
         IMapper mapper,
+        ICurrentUser currentUser,
         IIssueRepository issueRepository)
     {
         _logger = logger;
         _mapper = mapper;
+        _currentUser = currentUser;
         _issueRepository = issueRepository;
     }
 
     public async Task<PagedIssueDto> GetAllIssuesAsync(IssueFilter filter)
     {
-        var issuesDto = await _issueRepository.GetAllIssuesAsync(filter);
+        Expression<Func<Entities.Models.Issue, bool>>? predicate = null;
+
+        if (_currentUser.IsInRole(nameof(UserRole.Employee)))
+        {
+            predicate = p => p.ExecutorId == _currentUser.Id;
+        }
+        else if (_currentUser.IsInRole(nameof(UserRole.Manager)))
+        {
+            predicate = p => p.AuthorId == _currentUser.Id || p.ExecutorId == _currentUser.Id;
+        }
+        
+        var issuesDto = await _issueRepository.GetAllIssuesAsync(filter, predicate);
 
         return new PagedIssueDto
         {
@@ -37,7 +54,18 @@ public class IssueService : IIssueService
 
     public async Task<IssueInfoDto> GetIssueByIdAsync(int id)
     {
-        var issueDto = await _issueRepository.GetIssueByIdAsync(id);
+        Expression<Func<Entities.Models.Issue, bool>>? predicate = null;
+
+        if (_currentUser.IsInRole(nameof(UserRole.Employee)))
+        {
+            predicate = p => p.ExecutorId == _currentUser.Id;
+        }
+        else if (_currentUser.IsInRole(nameof(UserRole.Manager)))
+        {
+            predicate = p => p.AuthorId == _currentUser.Id || p.ExecutorId == _currentUser.Id;
+        }
+        
+        var issueDto = await _issueRepository.GetIssueByIdAsync(id, predicate);
         
         NotFoundException.ThrowIfNull(issueDto, "Issue not found");
 

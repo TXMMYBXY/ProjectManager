@@ -8,17 +8,24 @@ namespace ProjectManager.Infrastructure.Test;
 
 public class EmployeeServiceTests
 {
+    private class FakeCurrentUser : ProjectManager.Application.Common.ICurrentUser
+    {
+        public int Id { get; set; } = 1;
+        public bool IsInRole(string role) => false;
+    }
+
     private class FakeEmployeeRepository : IEmployeeRepository
     {
-        public Func<EmployeeFilter, Task<(IReadOnlyList<EmployeeItemDto>, int)>>? GetAllHandler;
+        public Func<EmployeeFilter, System.Linq.Expressions.Expression<Func<Entities.Models.Employee, bool>>?, Task<(IReadOnlyList<EmployeeItemDto>, int)>>? GetAllHandler;
         public Func<int, Task<EmployeeInfoDto?>>? GetByIdHandler;
         public Func<Entities.Models.Employee, Task>? CreateHandler;
         public Func<string, Task<bool>>? IsEmailExistsHandler;
         public Func<int, Task<bool>>? EmployeeExistsHandler;
         public Func<int, Task<Entities.Models.Employee?>>? GetByIdEntityHandler;
 
-        public Task<(IReadOnlyList<EmployeeItemDto>, int)> GetAllEmployeesAsync(EmployeeFilter filter) =>
-            GetAllHandler!(filter);
+        public Task<(IReadOnlyList<EmployeeItemDto>, int)> GetAllEmployeesAsync(EmployeeFilter filter,
+            System.Linq.Expressions.Expression<Func<Entities.Models.Employee, bool>>? predicate = null) =>
+            GetAllHandler!(filter, predicate);
 
         public Task<EmployeeInfoDto?> GetEmployeeByIdAsync(int employeeId) => GetByIdHandler != null ? GetByIdHandler(employeeId) : Task.FromResult<EmployeeInfoDto?>(null);
 
@@ -45,7 +52,7 @@ public class EmployeeServiceTests
     {
         var fakeRepo = new FakeEmployeeRepository
         {
-            GetAllHandler = filter => Task.FromResult(((IReadOnlyList<EmployeeItemDto>)Array.Empty<EmployeeItemDto>(), 0))
+            GetAllHandler = (filter, predicate) => Task.FromResult(((IReadOnlyList<EmployeeItemDto>)Array.Empty<EmployeeItemDto>(), 0))
         };
 
         var fakeEp = new FakeEmployeeProjectRepository();
@@ -66,7 +73,7 @@ public class EmployeeServiceTests
             return Task.CompletedTask;
         };
 
-        var service = new EmployeeService(new NullLogger<EmployeeService>(), mapper, fakeRepo, fakeEp);
+        var service = new EmployeeService(new NullLogger<EmployeeService>(), mapper, new FakeCurrentUser(), null, fakeRepo, fakeEp);
 
         var dto = new CreateEmployeeDto { FirstName = "Иван", LastName = "Петров", Patronymic = "Дмитриевич", Email = "ivan.petrov@example.ru" };
 
@@ -88,7 +95,7 @@ public class EmployeeServiceTests
 
         var mapper = new MapperConfiguration(cfg => { cfg.CreateMap<Entities.Models.Employee, EmployeeInfoDto>(); }).CreateMapper();
 
-        var service = new EmployeeService(new NullLogger<EmployeeService>(), mapper, fakeRepo, fakeEp);
+        var service = new EmployeeService(new NullLogger<EmployeeService>(), mapper, new FakeCurrentUser(), null, fakeRepo, fakeEp);
 
         await Assert.ThrowsAsync<ProjectManager.Application.Common.Exceptions.ConflictException>(() => service.AddProjectToEmployeeAsync(1, 1));
     }
@@ -105,7 +112,7 @@ public class EmployeeServiceTests
 
         var mapper = new MapperConfiguration(cfg => { cfg.CreateMap<CreateEmployeeDto, Entities.Models.Employee>(); }).CreateMapper();
 
-        var service = new EmployeeService(new NullLogger<EmployeeService>(), mapper, fakeRepo, fakeEp);
+        var service = new EmployeeService(new NullLogger<EmployeeService>(), mapper, new FakeCurrentUser(), null, fakeRepo, fakeEp);
 
         await Assert.ThrowsAsync<ProjectManager.Application.Common.Exceptions.ConflictException>(() => service.BulkInsertProjectsToEmployeeAsync(new List<int> { 1, 2 }, 5));
     }
@@ -134,7 +141,7 @@ public class EmployeeServiceTests
 
         var mapper = mapperCfg.CreateMapper();
 
-        var service = new EmployeeService(new NullLogger<EmployeeService>(), mapper, fakeRepo, fakeEp);
+        var service = new EmployeeService(new NullLogger<EmployeeService>(), mapper, new FakeCurrentUser(), null, fakeRepo, fakeEp);
 
         var dto = new UpdateEmployeeDto { FirstName = "Иван", LastName = "Сидоров", Email = "ivan.sidorov@example.ru" };
 
@@ -153,7 +160,7 @@ public class EmployeeServiceTests
 
         var mapper = new MapperConfiguration(cfg => { cfg.CreateMap<Entities.Models.Employee, EmployeeInfoDto>(); }).CreateMapper();
 
-        var service = new EmployeeService(new NullLogger<EmployeeService>(), mapper, fakeRepo, fakeEp);
+        var service = new EmployeeService(new NullLogger<EmployeeService>(), mapper, new FakeCurrentUser(), null, fakeRepo, fakeEp);
 
         await Assert.ThrowsAsync<ProjectManager.Application.Common.Exceptions.ConflictException>(() => service.DeleteEmployeeByIdAsync(1));
     }
@@ -187,13 +194,13 @@ public class EmployeeServiceTests
     {
         var fakeRepo = new FakeEmployeeRepository
         {
-            GetAllHandler = filter => Task.FromResult(((IReadOnlyList<EmployeeItemDto>)new[]
+            GetAllHandler = (filter, predicate) => Task.FromResult(((IReadOnlyList<EmployeeItemDto>)new[]
             {
                 new EmployeeItemDto { Id = 1, FirstName = "John", LastName = "Doe", Email = "a@b.com" }
             }, 1))
         };
 
-        var service = new EmployeeService(new NullLogger<EmployeeService>(), new MapperConfiguration(cfg => { }).CreateMapper(), fakeRepo, new FakeEmployeeProjectRepository());
+        var service = new EmployeeService(new NullLogger<EmployeeService>(), new MapperConfiguration(cfg => { }).CreateMapper(), new FakeCurrentUser(), null, fakeRepo, new FakeEmployeeProjectRepository());
 
         var result = await service.GetAllEmployeesAsync(new EmployeeFilter { PageNumber = 1, PageSize = 10 });
 
@@ -210,7 +217,7 @@ public class EmployeeServiceTests
             GetByIdHandler = id => Task.FromResult<EmployeeInfoDto?>(null)
         };
 
-        var service = new EmployeeService(new NullLogger<EmployeeService>(), new MapperConfiguration(cfg => { }).CreateMapper(), fakeRepo, new FakeEmployeeProjectRepository());
+        var service = new EmployeeService(new NullLogger<EmployeeService>(), new MapperConfiguration(cfg => { }).CreateMapper(), new FakeCurrentUser(), null, fakeRepo, new FakeEmployeeProjectRepository());
 
         await Assert.ThrowsAsync<ProjectManager.Application.Common.Exceptions.NotFoundException>(() => service.GetEmployeeByIdAsync(1));
     }

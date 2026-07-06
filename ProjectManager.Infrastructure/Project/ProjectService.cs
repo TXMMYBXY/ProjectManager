@@ -1,35 +1,53 @@
+using System.Linq.Expressions;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Query.Internal;
 using Microsoft.Extensions.Logging;
 using ProjectManager.Application.Common;
 using ProjectManager.Application.Common.Exceptions;
 using ProjectManager.Application.Project;
 using ProjectManager.Application.Project.Dto;
+using ProjectManager.Entities.Enums;
+
 namespace ProjectManager.Infrastructure.Project;
 
 public class ProjectService : IProjectService
 {
     private readonly ILogger<ProjectService> _logger;
     private readonly IMapper _mapper;
+    private readonly ICurrentUser _currentUser;
     private readonly IProjectRepository _projectRepository;
     private readonly IEmployeeProjectRepository _employeeProjectRepository;
 
     public ProjectService(
         ILogger<ProjectService> logger, 
         IMapper mapper,
+        ICurrentUser currentUser,
         IProjectRepository projectRepository,
         IEmployeeProjectRepository employeeProjectRepository)
     {
         _logger = logger;
         _mapper = mapper;
+        _currentUser = currentUser;
         _projectRepository = projectRepository;
         _employeeProjectRepository = employeeProjectRepository;
     }
     
     public async Task<PagedProjectDto> GetAllProjectsAsync(ProjectFilter filter)
     {
-        var projectsDto = await _projectRepository.GetAllProjectsAsync(filter);
+        Expression<Func<Entities.Models.Project, bool>>? predicate = null;
 
+        if (_currentUser.IsInRole(nameof(UserRole.Manager)))
+        {
+            predicate = p => p.ProjectManagerId == _currentUser.Id;
+        }
+        else if (_currentUser.IsInRole(nameof(UserRole.Employee)))
+        {
+            predicate = p => p.EmployeeProjects.Any(ep => ep.EmployeeId == _currentUser.Id);
+        }
+
+        var projectsDto = await _projectRepository.GetAllProjectsAsync(filter, predicate);
+        
         return new PagedProjectDto
         {
             Projects = projectsDto.Projects,
@@ -41,7 +59,14 @@ public class ProjectService : IProjectService
 
     public async Task<ProjectInfoDto> GetProjectByIdAsync(int id)
     {
-        var projectDto = await _projectRepository.GetProjectByIdAsync(id);
+        Expression<Func<Entities.Models.Project, bool>>? predicate = null;
+        
+        if (_currentUser.IsInRole(nameof(UserRole.Manager)))
+        {
+            predicate = p => p.ProjectManagerId == _currentUser.Id;
+        }
+        
+        var projectDto = await _projectRepository.GetProjectByIdAsync(id, predicate);
         
         NotFoundException.ThrowIfNull(projectDto, "Project not found");
         
@@ -89,7 +114,10 @@ public class ProjectService : IProjectService
         NotFoundException.ThrowIfNull(project, "Project not found");
 
         _mapper.Map(dto, project);
-
+        
+        if(dto.FinishDate.HasValue)
+            project.FinishDate = dto.FinishDate.Value;
+        
         await _projectRepository.SaveChangesAsync();
         
         _logger.LogInformation("Project successfully updated with id {0}", projectId);

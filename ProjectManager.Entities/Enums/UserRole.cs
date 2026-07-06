@@ -1,8 +1,8 @@
 namespace ProjectManager.Entities.Enums;
 
-public enum UserRole : byte
+public enum UserRole : int
 {
-    Employee,
-    Manager,
-    Director
+    Director = 1,
+    Manager = 2,
+    Employee = 3
 }

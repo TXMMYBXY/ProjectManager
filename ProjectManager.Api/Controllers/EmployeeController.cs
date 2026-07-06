@@ -1,15 +1,19 @@
 using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ProjectManager.Api.Features.Account.Auth;
 using ProjectManager.Api.Features.Employee.Requests;
 using ProjectManager.Api.Features.Employee.Responses;
 using ProjectManager.Api.Features.Project.Requests;
 using ProjectManager.Application.Employee;
 using ProjectManager.Application.Employee.Dto;
+using ProjectManager.Entities.Enums;
 
 namespace ProjectManager.Api.Controllers;
 
 [ApiController]
 [Route("api/employee")]
+[Authorize(Policy = Policy.DirectorAndManager)]
 public class EmployeeController : ControllerBase
 {
     private readonly IMapper _mapper;
@@ -44,6 +48,7 @@ public class EmployeeController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Policy = Policy.DirectorOnly)]
     public async Task<ActionResult> CreateEmployee([FromBody] CreateEmployeeRequest request)
     {
         var employeeDto = _mapper.Map<CreateEmployeeDto>(request);
@@ -54,6 +59,7 @@ public class EmployeeController : ControllerBase
     }
 
     [HttpPost("insert/{employeeId:int}/{projectId}")]
+    [Authorize(Policy = Policy.DirectorAndManager)]
     public async Task<ActionResult<EmployeeInfoResponse>> AddProjectToEmployee([FromRoute] int projectId, 
         [FromRoute] int employeeId)
     {
@@ -65,6 +71,7 @@ public class EmployeeController : ControllerBase
     }
 
     [HttpPost("bulk-insert/{employeeId:int}")]
+    [Authorize(Policy = Policy.DirectorAndManager)]
     public async Task<ActionResult<int>> BulkInsertProjectsToEmployee([FromBody] BulkInsertRequest request,
         [FromRoute] int employeeId)
     {
@@ -74,6 +81,7 @@ public class EmployeeController : ControllerBase
     }
 
     [HttpPost("delete/{employeeId:int}/{projectId}")]
+    [Authorize(Policy = Policy.DirectorAndManager)]
     public async Task<ActionResult<bool>> DeleteProjectFromEmployee([FromRoute] int projectId, [FromRoute] int employeeId)
     {
         var response = await _employeeService.DeleteProjectFromEmployeeAsync(projectId, employeeId);
@@ -82,6 +90,7 @@ public class EmployeeController : ControllerBase
     }
 
     [HttpPost("bulk-delete/{employeeId:int}")]
+    [Authorize(Policy = Policy.DirectorAndManager)]
     public async Task<ActionResult<int>> BulkDeleteProjectsFromEmployee([FromBody] BulkDeleteRequest request,
         [FromRoute] int employeeId)
     {
@@ -91,6 +100,7 @@ public class EmployeeController : ControllerBase
     }
 
     [HttpPost("bulk-delete")]
+    [Authorize(Policy = Policy.DirectorOnly)]
     public async Task<ActionResult<int>> BulkDeleteEmployees([FromBody] BulkDeleteRequest request)
     {
         var response = await _employeeService.BulkDeleteEmployeesAsync(request.Ids);
@@ -99,7 +109,8 @@ public class EmployeeController : ControllerBase
     }
 
     [HttpPatch("{id:int}")]
-    public async Task<ActionResult<UpdateEmployeeResponse>> UpdateResponse([FromRoute] int id,
+    [Authorize(Policy = Policy.DirectorOnly)]
+    public async Task<ActionResult<UpdateEmployeeResponse>> UpdateEmployee([FromRoute] int id,
         [FromBody] UpdateEmployeeRequest request)
     {
         var requestDto = _mapper.Map<UpdateEmployeeDto>(request);
@@ -112,6 +123,7 @@ public class EmployeeController : ControllerBase
     }
 
     [HttpDelete("{id:int}")]
+    [Authorize(Policy = Policy.DirectorOnly)]
     public async Task<ActionResult> DeleteEmployeeById([FromRoute] int id)
     {
         await _employeeService.DeleteEmployeeByIdAsync(id);

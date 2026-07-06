@@ -8,15 +8,21 @@ namespace ProjectManager.Infrastructure.Test;
 
 public class IssueServiceTests
 {
+    private class FakeCurrentUser : ProjectManager.Application.Common.ICurrentUser
+    {
+        public int Id { get; set; } = 1;
+        public bool IsInRole(string role) => false;
+    }
+
     private class FakeIssueRepository : IIssueRepository
     {
-        public Func<IssueFilter, Task<(IReadOnlyList<IssueItemDto>, int)>>? GetAllHandler;
+        public Func<IssueFilter, System.Linq.Expressions.Expression<Func<Entities.Models.Issue, bool>>?, Task<(IReadOnlyList<IssueItemDto>, int)>>? GetAllHandler;
         public Func<int, Task<IssueInfoDto?>>? GetByIdHandler;
         public Func<Entities.Models.Issue, Task>? CreateHandler;
         public Func<int, Task<Entities.Models.Issue?>>? GetByIdEntityHandler;
         public Func<int, Task<int>>? DeleteByIdHandler;
 
-        public Task<(IReadOnlyList<IssueItemDto>, int)> GetAllIssuesAsync(IssueFilter filter) => GetAllHandler!(filter);
+        public Task<(IReadOnlyList<IssueItemDto>, int)> GetAllIssuesAsync(IssueFilter filter, System.Linq.Expressions.Expression<Func<Entities.Models.Issue, bool>>? predicate = null) => GetAllHandler!(filter, predicate);
         public Task<IssueInfoDto?> GetIssueByIdAsync(int issueId) => GetByIdHandler!(issueId);
 
         public Task CreateAsync(Entities.Models.Issue entity) => CreateHandler != null ? CreateHandler(entity) : Task.CompletedTask;
@@ -43,7 +49,7 @@ public class IssueServiceTests
             cfg.CreateMap<Entities.Models.Issue, IssueInfoDto>();
         });
 
-        var service = new IssueService(new NullLogger<IssueService>(), mapperCfg.CreateMapper(), fakeRepo);
+        var service = new IssueService(new NullLogger<IssueService>(), mapperCfg.CreateMapper(), new FakeCurrentUser(), fakeRepo);
 
         var dto = new CreateIssueDto { Title = "Ошибка в модуле", Priority = 2, Status = ProjectManager.Entities.Enums.IssueStatus.ToDo, Comments = "Первый комментарий" };
 
@@ -68,7 +74,7 @@ public class IssueServiceTests
             cfg.CreateMap<Entities.Models.Issue, IssueInfoDto>();
         });
 
-        var service = new IssueService(new NullLogger<IssueService>(), mapperCfg.CreateMapper(), fakeRepo);
+        var service = new IssueService(new NullLogger<IssueService>(), mapperCfg.CreateMapper(), new FakeCurrentUser(), fakeRepo);
 
         var dto = new UpdateIssueDto { Comments = new ProjectManager.Application.Utils.Optional<string?>("Обновлённый комментарий") };
 
@@ -83,7 +89,7 @@ public class IssueServiceTests
         var fakeRepo = new FakeIssueRepository();
         fakeRepo.DeleteByIdHandler = id => Task.FromResult(0);
 
-        var service = new IssueService(new NullLogger<IssueService>(), new MapperConfiguration(cfg => { }).CreateMapper(), fakeRepo);
+        var service = new IssueService(new NullLogger<IssueService>(), new MapperConfiguration(cfg => { }).CreateMapper(), new FakeCurrentUser(), fakeRepo);
 
         await Assert.ThrowsAsync<ProjectManager.Application.Common.Exceptions.NotFoundException>(() => service.DeleteIssueByIdAsync(999));
     }
@@ -93,13 +99,13 @@ public class IssueServiceTests
     {
         var fakeRepo = new FakeIssueRepository
         {
-            GetAllHandler = filter => Task.FromResult(((IReadOnlyList<IssueItemDto>)new[]
+            GetAllHandler = (filter, predicate) => Task.FromResult(((IReadOnlyList<IssueItemDto>)new[]
             {
                 new IssueItemDto { Id = 3, Title = "Issue1", Priority = 1 }
             }, 1))
         };
 
-        var service = new IssueService(new NullLogger<IssueService>(), new MapperConfiguration(cfg => { }).CreateMapper(), fakeRepo);
+        var service = new IssueService(new NullLogger<IssueService>(), new MapperConfiguration(cfg => { }).CreateMapper(), new FakeCurrentUser(), fakeRepo);
 
         var result = await service.GetAllIssuesAsync(new IssueFilter { PageNumber = 1, PageSize = 10 });
 
@@ -116,7 +122,7 @@ public class IssueServiceTests
             GetByIdHandler = id => Task.FromResult<IssueInfoDto?>(null)
         };
 
-        var service = new IssueService(new NullLogger<IssueService>(), new MapperConfiguration(cfg => { }).CreateMapper(), fakeRepo);
+        var service = new IssueService(new NullLogger<IssueService>(), new MapperConfiguration(cfg => { }).CreateMapper(), new FakeCurrentUser(), fakeRepo);
 
         await Assert.ThrowsAsync<ProjectManager.Application.Common.Exceptions.NotFoundException>(() => service.GetIssueByIdAsync(1));
     }

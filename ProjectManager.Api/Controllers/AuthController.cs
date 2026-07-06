@@ -1,4 +1,5 @@
 using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ProjectManager.Api.Features.Account.Requests;
 using ProjectManager.Api.Features.Account.Responses;
@@ -8,13 +9,13 @@ using ProjectManager.Application.Account.Dto;
 namespace ProjectManager.Api.Controllers;
 
 [ApiController]
-[Route("api/account")]
-public class AccountController : ControllerBase
+[Route("api/auth")]
+public class AuthController : ControllerBase
 {
     private readonly IMapper _mapper;
     private readonly IAccountService _accountService;
     
-    public AccountController(IMapper mapper, IAccountService accountService)
+    public AuthController(IMapper mapper, IAccountService accountService)
     {
         _mapper = mapper;
         _accountService = accountService;
@@ -45,6 +46,7 @@ public class AccountController : ControllerBase
     }
 
     [HttpPost("logout")]
+    [Authorize]
     public async Task<ActionResult> Logout()
     {
         await _accountService.LogoutAsync();

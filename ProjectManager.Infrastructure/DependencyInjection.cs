@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using System.Security.Claims;
 using ProjectManager.Application.Account;
 using ProjectManager.Application.Common;
 using ProjectManager.Application.Employee;
@@ -36,6 +37,7 @@ public static class DependencyInjection
         services.AddScoped<IIssueService, IssueService>();
         services.AddScoped<IAccountService, AccountService>();
         services.AddScoped<IJwtService, JwtService>();
+        services.AddScoped<ICurrentUser, CurrentUser>();
         
         services.AddScoped(typeof(IBaseRepository<>), typeof(BaseRepository<>));
         services.AddScoped<IProjectRepository, ProjectRepository>();
@@ -45,6 +47,7 @@ public static class DependencyInjection
         
         var dataBaseConnectionSettings =
             configuration.GetSection("DataBaseConnectionSettings").Get<DataBaseConnectionSettings>();
+        
         
         services.AddDbContext<ApplicationDbContext>(options =>
         {
@@ -57,6 +60,8 @@ public static class DependencyInjection
                         errorNumbersToAdd: null);
                 });
         });
+        
+        services.AddHttpContextAccessor();
         
         services.AddIdentity<Entities.Models.Employee, IdentityRole<int>>(options =>
         {
@@ -91,7 +96,8 @@ public static class DependencyInjection
                     System.Text.Encoding.UTF8.GetBytes(configuration["JwtSettings:SecretKey"])
                 ),
                 ValidateLifetime = true,
-                ClockSkew = TimeSpan.Zero
+                ClockSkew = TimeSpan.Zero,
+                RoleClaimType = ClaimTypes.Role
             };
         });
         

@@ -20,4 +20,5 @@ RUN dotnet publish "./ProjectManager.Api.csproj" -c $BUILD_CONFIGURATION -o /app
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
+VOLUME /app/Logs
 ENTRYPOINT ["dotnet", "ProjectManager.Api.dll"]

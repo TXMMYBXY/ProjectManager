@@ -4,6 +4,8 @@
     build:
       context: .
       dockerfile: ProjectManager.Api/Dockerfile
+    volumes:
+      - project_logs:/app/Logs
 
   db:
     image: mcr.microsoft.com/mssql/server:2022-latest
