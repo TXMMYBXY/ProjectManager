@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using ProjectManager.Application.Employee.Dto;
 using ProjectManager.Application.Issue;
@@ -17,13 +18,18 @@ public class IssueRepository : BaseRepository<Entities.Models.Issue>, IIssueRepo
         _dbContext = dbContext;
     }
 
-    public async Task<(IReadOnlyList<IssueItemDto>, int)> GetAllIssuesAsync(IssueFilter filter)
+    public async Task<(IReadOnlyList<IssueItemDto>, int)> GetAllIssuesAsync(IssueFilter filter, 
+        Expression<Func<Entities.Models.Issue, bool>>? predicate = null)
     {
-        var query = _dbContext.Issues
+        var query = _dbContext.Issues.AsQueryable();
+        
+        if (predicate != null)
+            query = query.Where(predicate);
+        
+        query = query
             .AsNoTracking()
             .ApplyFilter(filter)
-            .ApplySorting(filter)
-            .AsQueryable(); 
+            .ApplySorting(filter);
         
         var totalCount = await query.CountAsync();
 
@@ -66,9 +72,16 @@ public class IssueRepository : BaseRepository<Entities.Models.Issue>, IIssueRepo
         return (await result.ToListAsync(), totalCount);
     }
 
-    public async Task<IssueInfoDto?> GetIssueByIdAsync(int issueId)
+    public async Task<IssueInfoDto?> GetIssueByIdAsync(int issueId, 
+        Expression<Func<Entities.Models.Issue, bool>>? predicate = null)
     {
-        return await _dbContext.Issues
+        var query = _dbContext.Issues.AsQueryable();
+        
+        if (predicate != null)
+            query = query.Where(predicate);
+        
+        return await query
+            .AsNoTracking()
             .Where(i => i.Id == issueId)
             .Select(i => new IssueInfoDto
             {

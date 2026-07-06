@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using AutoMapper;
 using Microsoft.Extensions.Logging.Abstractions;
 using ProjectManager.Application.Project;
@@ -8,18 +9,24 @@ namespace ProjectManager.Infrastructure.Test;
 
 public class ProjectServiceTests
 {
+    private class FakeCurrentUser : ProjectManager.Application.Common.ICurrentUser
+    {
+        public int Id { get; set; } = 1;
+        public bool IsInRole(string role) => false;
+    }
+
     private class FakeProjectRepository : IProjectRepository
     {
-        public Func<ProjectFilter, Task<(IReadOnlyList<ProjectItemDto>, int)>>? GetAllHandler;
-        public Func<int, Task<ProjectInfoDto?>>? GetByIdHandler;
+        public Func<ProjectFilter, Expression<Func<Entities.Models.Project, bool>>?, Task<(IReadOnlyList<ProjectItemDto>, int)>>? GetAllHandler;
+        public Func<int, Expression<Func<Entities.Models.Project, bool>>?, Task<ProjectInfoDto?>>? GetByIdHandler;
         public Func<Entities.Models.Project, Task>? CreateHandler;
         public Func<int, Task<Entities.Models.Project?>>? GetByIdEntityHandler;
         public Func<int, Task<bool>>? ProjectExistsHandler;
         public Func<int, Task<bool>>? HasManagersHandler;
         public Func<int, Task<bool>>? HasIssuesHandler;
 
-        public Task<(IReadOnlyList<ProjectItemDto>, int)> GetAllProjectsAsync(ProjectFilter filter) => GetAllHandler!(filter);
-        public Task<ProjectInfoDto?> GetProjectByIdAsync(int projectId) => GetByIdHandler!(projectId);
+        public Task<(IReadOnlyList<ProjectItemDto>, int)> GetAllProjectsAsync(ProjectFilter filter, Expression<Func<Entities.Models.Project, bool>>? predicate = null) => GetAllHandler!(filter, predicate);
+        public Task<ProjectInfoDto?> GetProjectByIdAsync(int projectId, Expression<Func<Entities.Models.Project, bool>>? predicate = null) => GetByIdHandler!(projectId, predicate);
 
         public Task CreateAsync(Entities.Models.Project entity) => CreateHandler != null ? CreateHandler(entity) : Task.CompletedTask;
         public Task<Entities.Models.Project?> GetByIdAsync(int id) => GetByIdEntityHandler != null ? GetByIdEntityHandler(id) : Task.FromResult<Entities.Models.Project?>(null);
@@ -50,7 +57,7 @@ public class ProjectServiceTests
             cfg.CreateMap<Entities.Models.Project, ProjectInfoDto>();
         });
 
-        var service = new ProjectService(new NullLogger<ProjectService>(), mapperCfg.CreateMapper(), fakeRepo, fakeEp);
+        var service = new ProjectService(new NullLogger<ProjectService>(), mapperCfg.CreateMapper(), new FakeCurrentUser(), fakeRepo, fakeEp);
 
         var dto = new CreateProjectDto { Title = "Проект А", CompanyCustomer = "Заказчик А", CompanyExecutor = "Исполнитель А", FinishDate = DateTime.UtcNow.AddDays(30), Priority = 1, ProjectManagerId = 1 };
 
@@ -65,7 +72,7 @@ public class ProjectServiceTests
     {
         var fakeRepo = new FakeProjectRepository
         {
-            GetByIdHandler = id => Task.FromResult<ProjectInfoDto?>(new ProjectInfoDto { Id = id })
+            GetByIdHandler = (id, predicate) => Task.FromResult<ProjectInfoDto?>(new ProjectInfoDto { Id = id })
         };
 
         var fakeEp = new FakeEmployeeProjectRepository();
@@ -73,7 +80,7 @@ public class ProjectServiceTests
 
         var mapper = new MapperConfiguration(cfg => { cfg.CreateMap<Entities.Models.Project, ProjectInfoDto>(); }).CreateMapper();
 
-        var service = new ProjectService(new NullLogger<ProjectService>(), mapper, fakeRepo, fakeEp);
+        var service = new ProjectService(new NullLogger<ProjectService>(), mapper, new FakeCurrentUser(), fakeRepo, fakeEp);
 
         await Assert.ThrowsAsync<ProjectManager.Application.Common.Exceptions.ConflictException>(() => service.AssignEmployeeToProjectAsync(1, 1));
     }
@@ -85,7 +92,7 @@ public class ProjectServiceTests
         var fakeEp = new FakeEmployeeProjectRepository();
         fakeEp.HasAnyLinksForProjectHandler = id => Task.FromResult(true);
 
-        var service = new ProjectService(new NullLogger<ProjectService>(), new MapperConfiguration(cfg => { }).CreateMapper(), fakeRepo, fakeEp);
+        var service = new ProjectService(new NullLogger<ProjectService>(), new MapperConfiguration(cfg => { }).CreateMapper(), new FakeCurrentUser(), fakeRepo, fakeEp);
 
         await Assert.ThrowsAsync<ProjectManager.Application.Common.Exceptions.ConflictException>(() => service.DeleteProjectByIdAsync(1));
     }
@@ -108,7 +115,7 @@ public class ProjectServiceTests
             cfg.CreateMap<Entities.Models.Project, ProjectInfoDto>();
         });
 
-        var service = new ProjectService(new NullLogger<ProjectService>(), mapperCfg.CreateMapper(), fakeRepo, fakeEp);
+        var service = new ProjectService(new NullLogger<ProjectService>(), mapperCfg.CreateMapper(), new FakeCurrentUser(), fakeRepo, fakeEp);
 
         var dto = new UpdateProjectDto { Title = "Проект Б", CompanyCustomer = "Заказчик Б", CompanyExecutor = "Исполнитель Б" };
 
@@ -146,13 +153,13 @@ public class ProjectServiceTests
     {
         var fakeRepo = new FakeProjectRepository
         {
-            GetAllHandler = filter => Task.FromResult(((IReadOnlyList<ProjectItemDto>)new[]
+            GetAllHandler = (filter, predicate) => Task.FromResult(((IReadOnlyList<ProjectItemDto>)new[]
             {
                 new ProjectItemDto { Id = 2, Title = "P1", CompanyCustomer = "C", CompanyExecuter = "E", StartDate = DateTime.UtcNow }
             }, 1))
         };
 
-        var service = new ProjectService(new NullLogger<ProjectService>(), new MapperConfiguration(cfg => { }).CreateMapper(), fakeRepo, new FakeEmployeeProjectRepository());
+        var service = new ProjectService(new NullLogger<ProjectService>(), new MapperConfiguration(cfg => { }).CreateMapper(), new FakeCurrentUser(), fakeRepo, new FakeEmployeeProjectRepository());
 
         var result = await service.GetAllProjectsAsync(new ProjectFilter { PageNumber = 1, PageSize = 10 });
 
@@ -166,10 +173,10 @@ public class ProjectServiceTests
     {
         var fakeRepo = new FakeProjectRepository
         {
-            GetByIdHandler = id => Task.FromResult<ProjectInfoDto?>(null)
+            GetByIdHandler = (id, predicate) => Task.FromResult<ProjectInfoDto?>(null)
         };
 
-        var service = new ProjectService(new NullLogger<ProjectService>(), new MapperConfiguration(cfg => { }).CreateMapper(), fakeRepo, new FakeEmployeeProjectRepository());
+        var service = new ProjectService(new NullLogger<ProjectService>(), new MapperConfiguration(cfg => { }).CreateMapper(), new FakeCurrentUser(), fakeRepo, new FakeEmployeeProjectRepository());
 
         await Assert.ThrowsAsync<ProjectManager.Application.Common.Exceptions.NotFoundException>(() => service.GetProjectByIdAsync(1));
     }

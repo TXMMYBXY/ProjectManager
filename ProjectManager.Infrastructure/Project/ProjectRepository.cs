@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using ProjectManager.Application.Employee.Dto;
 using ProjectManager.Application.Issue.Dto;
@@ -17,13 +18,18 @@ public class ProjectRepository : BaseRepository<Entities.Models.Project>, IProje
         _dbContext = dbContext;
     }
 
-    public async Task<(IReadOnlyList<ProjectItemDto>, int)> GetAllProjectsAsync(ProjectFilter filter)
+    public async Task<(IReadOnlyList<ProjectItemDto>, int)> GetAllProjectsAsync(ProjectFilter filter, 
+        Expression<Func<Entities.Models.Project, bool>>? predicate = null)
     {
-        var query = _dbContext.Projects
+        var query = _dbContext.Projects.AsQueryable();
+
+        if (predicate != null)
+            query = query.Where(predicate);
+
+        query = query
             .AsNoTracking()
             .ApplyFilter(filter)
-            .ApplySorting(filter)
-            .AsQueryable();
+            .ApplySorting(filter);
         
         var totalCount = await query.CountAsync();
 
@@ -52,9 +58,14 @@ public class ProjectRepository : BaseRepository<Entities.Models.Project>, IProje
         return (await result.ToListAsync(), totalCount);
     }
 
-    public async Task<ProjectInfoDto?> GetProjectByIdAsync(int projectId)
+    public async Task<ProjectInfoDto?> GetProjectByIdAsync(int projectId, Expression<Func<Entities.Models.Project, bool>>? predicate = null)
     {
-        return await _dbContext.Projects
+        var query = _dbContext.Projects.AsQueryable();
+        
+        if (predicate != null)
+            query = query.Where(predicate);
+
+        return await query
             .AsNoTracking()
             .Where(p => p.Id == projectId)
             .Select(p => new ProjectInfoDto

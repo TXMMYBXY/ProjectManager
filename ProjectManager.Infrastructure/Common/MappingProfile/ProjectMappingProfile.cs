@@ -10,6 +10,7 @@ public class ProjectMappingProfile : Profile
         CreateMap<CreateProjectDto, Entities.Models.Project>();
         
         CreateMap<UpdateProjectDto, Entities.Models.Project>()
+            .ForMember(dest => dest.FinishDate, opt => opt.Ignore())
             .ForAllMembers(opts=>
                 opts.Condition((src, dest, srcMember) => srcMember != null));
 

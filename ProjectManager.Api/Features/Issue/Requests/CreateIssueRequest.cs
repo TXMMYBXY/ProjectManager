@@ -19,9 +19,7 @@ public class CreateIssueRequest
     [JsonPropertyName("projectId")]
     public int ProjectId { get; set; }
     [Required]
-    [JsonPropertyName("authorId")]
-    public int AuthorId { get; set; }
-    [Required]
     [JsonPropertyName("executorId")]
     public int ExecutorId { get; set; }
+    public int AuthorId { get; set; }
 }

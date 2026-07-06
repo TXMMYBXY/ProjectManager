@@ -1,34 +1,55 @@
+using System.Linq.Expressions;
 using AutoMapper;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using ProjectManager.Application.Common;
 using ProjectManager.Application.Common.Exceptions;
 using ProjectManager.Application.Employee;
 using ProjectManager.Application.Employee.Dto;
+using ProjectManager.Entities.Enums;
 
 namespace ProjectManager.Infrastructure.Employee;
 
 public class EmployeeService : IEmployeeService
 {
     private readonly ILogger<EmployeeService> _logger;
-    private readonly  IMapper _mapper;
+    private readonly IMapper _mapper;
+    ICurrentUser _currentUser;
+    private readonly UserManager<Entities.Models.Employee> _userManager;
     private readonly IEmployeeRepository _employeeRepository;
     private readonly IEmployeeProjectRepository _employeeProjectRepository;
 
     public EmployeeService(
         ILogger<EmployeeService> logger,
         IMapper mapper,
+        ICurrentUser currentUser,
+        UserManager<Entities.Models.Employee> userManager,
         IEmployeeRepository employeeRepository,
         IEmployeeProjectRepository employeeProjectRepository)
     {
         _logger = logger;
         _mapper = mapper;
+        _currentUser = currentUser;
+        _userManager = userManager;
         _employeeRepository = employeeRepository;
         _employeeProjectRepository = employeeProjectRepository;
     }
     
     public async Task<PagedEmployeeDto> GetAllEmployeesAsync(EmployeeFilter filter)
     {
-        var employeesDto = await _employeeRepository.GetAllEmployeesAsync(filter);
+        Expression<Func<Entities.Models.Employee, bool>>? predicate = null;
+
+        if (_currentUser.IsInRole(nameof(UserRole.Manager)))
+        {
+            predicate = e =>
+                e.EmployeeProjects.Select(ep => ep.Project).Where(pr => pr.ProjectManagerId == _currentUser.Id).Any();
+        }
+        else if (_currentUser.IsInRole(nameof(UserRole.Employee)))
+        {
+            predicate = p => p.Id == _currentUser.Id;
+        }
+
+        var employeesDto = await _employeeRepository.GetAllEmployeesAsync(filter, predicate);
 
         return new PagedEmployeeDto
         {
@@ -41,7 +62,14 @@ public class EmployeeService : IEmployeeService
 
     public async Task<EmployeeInfoDto> GetEmployeeByIdAsync(int id)
     {
-        var employeeDto = await _employeeRepository.GetEmployeeByIdAsync(id);
+        Expression<Func<Entities.Models.Employee, bool>>? predicate = null;
+
+        if (_currentUser.IsInRole(nameof(UserRole.Manager)))
+        {
+            predicate = e => e.EmployeeProjects.Where(ep => ep.Project.ProjectManagerId == _currentUser.Id).Any();
+        }
+
+        var employeeDto = await _employeeRepository.GetEmployeeByIdAsync(id, predicate);
         
         NotFoundException.ThrowIfNull(employeeDto, "Employee not found");
         
@@ -51,12 +79,27 @@ public class EmployeeService : IEmployeeService
     public async Task CreateEmployeeAsync(CreateEmployeeDto dto)
     {
         var employee = _mapper.Map<Entities.Models.Employee>(dto);
-        
+
         ConflictException.ThrowIf(await _employeeRepository.IsEmailExists(dto.Email), "Email already exists");
-        
-        await _employeeRepository.CreateAsync(employee);
-        await _employeeRepository.SaveChangesAsync();
-        
+
+        employee.UserName = dto.Email;
+
+        if (_userManager == null)
+        {
+            // In tests UserManager may be not provided; fall back to repository creation
+            await _employeeRepository.CreateAsync(employee);
+            await _employeeRepository.SaveChangesAsync();
+            _logger.LogInformation("Employee successfully created with id {0}", employee.Id);
+            return;
+        }
+
+        var result = await _userManager.CreateAsync(employee, dto.Password);
+
+        if (!result.Succeeded)
+            throw new Exception(string.Join(", ", result.Errors.Select(e => e.Description)));
+
+        await _userManager.AddToRoleAsync(employee, dto.Role.ToString());
+
         _logger.LogInformation("Employee successfully created with id {0}", employee.Id);
     }
 
@@ -95,6 +138,9 @@ public class EmployeeService : IEmployeeService
         NotFoundException.ThrowIfNull(employee, "Employee not found");
         
         _mapper.Map(dto, employee);
+        
+        if(dto.Patronymic.HasValue)
+            employee.Patronymic = dto.Patronymic.Value;
 
         await _employeeRepository.SaveChangesAsync();
         

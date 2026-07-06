@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using ProjectManager.Application.Employee;
 using ProjectManager.Application.Employee.Dto;
@@ -17,13 +18,18 @@ public class EmployeeRepository : BaseRepository<Entities.Models.Employee>, IEmp
         _dbContext = dbContext;
     }
 
-    public async Task<(IReadOnlyList<EmployeeItemDto>, int)> GetAllEmployeesAsync(EmployeeFilter filter)
+    public async Task<(IReadOnlyList<EmployeeItemDto>, int)> GetAllEmployeesAsync(EmployeeFilter filter,
+        Expression<Func<Entities.Models.Employee, bool>>? predicate = null)
     {
-        var query = _dbContext.Employees
+        var query = _dbContext.Employees.AsQueryable();
+        
+        if (predicate != null)
+            query = query.Where(predicate);
+        
+        query = query
             .AsNoTracking()
             .ApplyFilter(filter)
-            .ApplySorting(filter)
-            .AsQueryable(); 
+            .ApplySorting(filter); 
         
         var totalCount = await query.CountAsync();
 
@@ -41,9 +47,15 @@ public class EmployeeRepository : BaseRepository<Entities.Models.Employee>, IEmp
         return (await result.ToListAsync(), totalCount);
     }
 
-    public async Task<EmployeeInfoDto?> GetEmployeeByIdAsync(int employeeId)
+    public async Task<EmployeeInfoDto?> GetEmployeeByIdAsync(int employeeId, 
+        Expression<Func<Entities.Models.Employee, bool>>? predicate = null)
     {
-        return await _dbContext.Employees
+        var query = _dbContext.Employees.AsQueryable();
+        
+        if (predicate != null)
+            query = query.Where(predicate);
+
+        return await query
             .AsNoTracking()
             .Where(e => e.Id == employeeId)
             .Select(e => new EmployeeInfoDto

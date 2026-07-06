@@ -19,6 +19,7 @@ public class ProjectMappingProfile : Profile
         CreateMap<UpdateProjectRequest, UpdateProjectDto>()
             .ForAllMembers(opts=>
                 opts.Condition((src, dest, srcMember) => srcMember != null));
+        CreateMap<ProjectInfoDto, UpdateProjectResponse>();
         
         CreateMap<ProjectInfoDto, ProjectInfoResponse>();
     }
