@@ -17,7 +17,7 @@ public class EmployeeServiceTests
     private class FakeEmployeeRepository : IEmployeeRepository
     {
         public Func<EmployeeFilter, System.Linq.Expressions.Expression<Func<Entities.Models.Employee, bool>>?, Task<(IReadOnlyList<EmployeeItemDto>, int)>>? GetAllHandler;
-        public Func<int, Task<EmployeeInfoDto?>>? GetByIdHandler;
+        public Func<int, System.Linq.Expressions.Expression<Func<Entities.Models.Employee, bool>>?, Task<EmployeeInfoDto?>>? GetByIdHandler;
         public Func<Entities.Models.Employee, Task>? CreateHandler;
         public Func<string, Task<bool>>? IsEmailExistsHandler;
         public Func<int, Task<bool>>? EmployeeExistsHandler;
@@ -27,7 +27,7 @@ public class EmployeeServiceTests
             System.Linq.Expressions.Expression<Func<Entities.Models.Employee, bool>>? predicate = null) =>
             GetAllHandler!(filter, predicate);
 
-        public Task<EmployeeInfoDto?> GetEmployeeByIdAsync(int employeeId) => GetByIdHandler != null ? GetByIdHandler(employeeId) : Task.FromResult<EmployeeInfoDto?>(null);
+        public Task<EmployeeInfoDto?> GetEmployeeByIdAsync(int employeeId, System.Linq.Expressions.Expression<Func<Entities.Models.Employee, bool>>? predicate = null) => GetByIdHandler != null ? GetByIdHandler(employeeId, predicate) : Task.FromResult<EmployeeInfoDto?>(null);
 
         public Task<bool> IsEmailExists(string email) => IsEmailExistsHandler != null ? IsEmailExistsHandler(email) : Task.FromResult(false);
         public Task<bool> EmployeeExistsAsync(int id) => EmployeeExistsHandler != null ? EmployeeExistsHandler(id) : Task.FromResult(true);
@@ -87,7 +87,7 @@ public class EmployeeServiceTests
     {
         var fakeRepo = new FakeEmployeeRepository
         {
-            GetByIdHandler = id => Task.FromResult<EmployeeInfoDto?>(new EmployeeInfoDto { Id = id })
+            GetByIdHandler = (id, predicate) => Task.FromResult<EmployeeInfoDto?>(new EmployeeInfoDto { Id = id })
         };
 
         var fakeEp = new FakeEmployeeProjectRepository();
@@ -124,7 +124,7 @@ public class EmployeeServiceTests
 
         var fakeRepo = new FakeEmployeeRepository
         {
-            GetByIdHandler = id => Task.FromResult<EmployeeInfoDto?>(null),
+            GetByIdHandler = (id, predicate) => Task.FromResult<EmployeeInfoDto?>(null),
             // implement GetByIdAsync for entity retrieval
         };
 
@@ -214,7 +214,7 @@ public class EmployeeServiceTests
     {
         var fakeRepo = new FakeEmployeeRepository
         {
-            GetByIdHandler = id => Task.FromResult<EmployeeInfoDto?>(null)
+            GetByIdHandler = (id, predicate) => Task.FromResult<EmployeeInfoDto?>(null)
         };
 
         var service = new EmployeeService(new NullLogger<EmployeeService>(), new MapperConfiguration(cfg => { }).CreateMapper(), new FakeCurrentUser(), null, fakeRepo, new FakeEmployeeProjectRepository());

@@ -18,7 +18,7 @@ public class ProjectServiceTests
     private class FakeProjectRepository : IProjectRepository
     {
         public Func<ProjectFilter, Expression<Func<Entities.Models.Project, bool>>?, Task<(IReadOnlyList<ProjectItemDto>, int)>>? GetAllHandler;
-        public Func<int, Task<ProjectInfoDto?>>? GetByIdHandler;
+        public Func<int, Expression<Func<Entities.Models.Project, bool>>?, Task<ProjectInfoDto?>>? GetByIdHandler;
         public Func<Entities.Models.Project, Task>? CreateHandler;
         public Func<int, Task<Entities.Models.Project?>>? GetByIdEntityHandler;
         public Func<int, Task<bool>>? ProjectExistsHandler;
@@ -26,7 +26,7 @@ public class ProjectServiceTests
         public Func<int, Task<bool>>? HasIssuesHandler;
 
         public Task<(IReadOnlyList<ProjectItemDto>, int)> GetAllProjectsAsync(ProjectFilter filter, Expression<Func<Entities.Models.Project, bool>>? predicate = null) => GetAllHandler!(filter, predicate);
-        public Task<ProjectInfoDto?> GetProjectByIdAsync(int projectId) => GetByIdHandler!(projectId);
+        public Task<ProjectInfoDto?> GetProjectByIdAsync(int projectId, Expression<Func<Entities.Models.Project, bool>>? predicate = null) => GetByIdHandler!(projectId, predicate);
 
         public Task CreateAsync(Entities.Models.Project entity) => CreateHandler != null ? CreateHandler(entity) : Task.CompletedTask;
         public Task<Entities.Models.Project?> GetByIdAsync(int id) => GetByIdEntityHandler != null ? GetByIdEntityHandler(id) : Task.FromResult<Entities.Models.Project?>(null);
@@ -72,7 +72,7 @@ public class ProjectServiceTests
     {
         var fakeRepo = new FakeProjectRepository
         {
-            GetByIdHandler = id => Task.FromResult<ProjectInfoDto?>(new ProjectInfoDto { Id = id })
+            GetByIdHandler = (id, predicate) => Task.FromResult<ProjectInfoDto?>(new ProjectInfoDto { Id = id })
         };
 
         var fakeEp = new FakeEmployeeProjectRepository();
@@ -173,7 +173,7 @@ public class ProjectServiceTests
     {
         var fakeRepo = new FakeProjectRepository
         {
-            GetByIdHandler = id => Task.FromResult<ProjectInfoDto?>(null)
+            GetByIdHandler = (id, predicate) => Task.FromResult<ProjectInfoDto?>(null)
         };
 
         var service = new ProjectService(new NullLogger<ProjectService>(), new MapperConfiguration(cfg => { }).CreateMapper(), new FakeCurrentUser(), fakeRepo, new FakeEmployeeProjectRepository());

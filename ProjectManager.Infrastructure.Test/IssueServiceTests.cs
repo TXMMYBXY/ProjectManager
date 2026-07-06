@@ -17,13 +17,13 @@ public class IssueServiceTests
     private class FakeIssueRepository : IIssueRepository
     {
         public Func<IssueFilter, System.Linq.Expressions.Expression<Func<Entities.Models.Issue, bool>>?, Task<(IReadOnlyList<IssueItemDto>, int)>>? GetAllHandler;
-        public Func<int, Task<IssueInfoDto?>>? GetByIdHandler;
+        public Func<int, System.Linq.Expressions.Expression<Func<Entities.Models.Issue, bool>>?, Task<IssueInfoDto?>>? GetByIdHandler;
         public Func<Entities.Models.Issue, Task>? CreateHandler;
         public Func<int, Task<Entities.Models.Issue?>>? GetByIdEntityHandler;
         public Func<int, Task<int>>? DeleteByIdHandler;
 
         public Task<(IReadOnlyList<IssueItemDto>, int)> GetAllIssuesAsync(IssueFilter filter, System.Linq.Expressions.Expression<Func<Entities.Models.Issue, bool>>? predicate = null) => GetAllHandler!(filter, predicate);
-        public Task<IssueInfoDto?> GetIssueByIdAsync(int issueId) => GetByIdHandler!(issueId);
+        public Task<IssueInfoDto?> GetIssueByIdAsync(int issueId, System.Linq.Expressions.Expression<Func<Entities.Models.Issue, bool>>? predicate = null) => GetByIdHandler!(issueId, predicate);
 
         public Task CreateAsync(Entities.Models.Issue entity) => CreateHandler != null ? CreateHandler(entity) : Task.CompletedTask;
         public Task<Entities.Models.Issue?> GetByIdAsync(int id) => GetByIdEntityHandler != null ? GetByIdEntityHandler(id) : Task.FromResult<Entities.Models.Issue?>(null);
@@ -119,7 +119,7 @@ public class IssueServiceTests
     {
         var fakeRepo = new FakeIssueRepository
         {
-            GetByIdHandler = id => Task.FromResult<IssueInfoDto?>(null)
+            GetByIdHandler = (id, predicate) => Task.FromResult<IssueInfoDto?>(null)
         };
 
         var service = new IssueService(new NullLogger<IssueService>(), new MapperConfiguration(cfg => { }).CreateMapper(), new FakeCurrentUser(), fakeRepo);
