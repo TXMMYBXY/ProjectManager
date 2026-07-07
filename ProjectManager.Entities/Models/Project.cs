@@ -19,4 +19,6 @@ public class Project : EntityBase
     public ICollection<Issue>? Issues { get; set; }
     
     public ICollection<EmployeeProject>? EmployeeProjects { get; set; }
+
+    public ICollection<Document>? Documents { get; set; }
 }

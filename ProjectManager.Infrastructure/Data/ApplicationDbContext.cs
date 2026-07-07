@@ -16,6 +16,7 @@ public class ApplicationDbContext : IdentityDbContext<Entities.Models.Employee, 
     public DbSet<Entities.Models.Project> Projects { get; set; }
     public DbSet<Entities.Models.Issue> Issues { get; set; }
     public DbSet<EmployeeProject> EmployeesProjects { get; set; }
+    public DbSet<Entities.Models.Document> Documents { get; set; }
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
