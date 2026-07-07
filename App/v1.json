@@ -358,6 +358,35 @@
         }
       }
     },
+    "/api/employee/project-managers": {
+      "get": {
+        "tags": [
+          "Employee"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectManagerResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectManagerResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectManagerResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/employee/insert/{employeeId}/{projectId}": {
       "post": {
         "tags": [
@@ -1994,6 +2023,17 @@
           },
           "projectManager": {
             "$ref": "#/components/schemas/EmployeeSummaryDto"
+          }
+        }
+      },
+      "ProjectManagerResponse": {
+        "type": "object",
+        "properties": {
+          "projectManagers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EmployeeItemDto"
+            }
           }
         }
       },

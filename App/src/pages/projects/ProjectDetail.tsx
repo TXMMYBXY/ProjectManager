@@ -87,8 +87,9 @@ export const ProjectDetail: React.FC = () => {
 
   const loadEmployees = async () => {
     try {
-      const res = await employeeApi.list({ PageSize: 200 });
-      setAllEmployees(res.employees ?? []);
+      // load only eligible project managers/directors for manager select
+      const res = await employeeApi.getProjectManagers();
+      setAllEmployees(res.projectManagers ?? []);
     } catch { }
   };
 
@@ -98,14 +99,24 @@ export const ProjectDetail: React.FC = () => {
     if (!id) return;
     setSaving(true);
     try {
-      await projectApi.update(Number(id), {
-        title: editForm.title || null,
-        companyCustomer: editForm.companyCustomer || null,
-        companyExecuter: editForm.companyExecuter || null,
-        finishDate: { hasValue: true, value: editForm.finishDate ? new Date(editForm.finishDate).toISOString() : null },
-        priority: editForm.priority ? Number(editForm.priority) : null,
-        projectManagerId: editForm.projectManagerId ? Number(editForm.projectManagerId) : null,
-      });
+      // send only changed fields
+      const body: any = {};
+      if ((project?.title ?? '') !== editForm.title) body.title = editForm.title || null;
+      if ((project?.companyCustomer ?? '') !== editForm.companyCustomer) body.companyCustomer = editForm.companyCustomer || null;
+      if ((project?.companyExecuter ?? '') !== editForm.companyExecuter) body.companyExecuter = editForm.companyExecuter || null;
+      const originalFinish = toDateInput(project?.finishDate);
+      if (originalFinish !== editForm.finishDate) body.finishDate = { hasValue: true, value: editForm.finishDate ? new Date(editForm.finishDate).toISOString() : null };
+      if (String(project?.priority ?? '') !== editForm.priority) body.priority = editForm.priority ? Number(editForm.priority) : null;
+      const originalManager = project?.projectManager ? String(project.projectManager.id) : '';
+      if (originalManager !== editForm.projectManagerId) body.projectManagerId = editForm.projectManagerId ? Number(editForm.projectManagerId) : null;
+
+      if (Object.keys(body).length === 0) {
+        toast('info', 'No changes to save');
+        setEditing(false);
+        return;
+      }
+
+      await projectApi.update(Number(id), body);
       toast('success', 'Project updated');
       setEditing(false);
       load();

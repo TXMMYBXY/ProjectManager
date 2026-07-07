@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
 using ProjectManager.Application.Account;
@@ -59,17 +60,20 @@ public static class DependencyInjection
                         maxRetryDelay: TimeSpan.FromSeconds(5),
                         errorNumbersToAdd: null);
                 });
+
+            // Игнорируем предупреждение о несинхронизированных миграциях при запуске автоприменения миграций.
+            options.ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning));
         });
         
         services.AddHttpContextAccessor();
         
         services.AddIdentity<Entities.Models.Employee, IdentityRole<int>>(options =>
         {
-            options.Password.RequireDigit = true;
-            options.Password.RequireLowercase = true;
-            options.Password.RequireUppercase = true;
-            options.Password.RequireNonAlphanumeric = true;
             options.Password.RequiredLength = 4;
+            options.Password.RequireNonAlphanumeric = false;
+            options.Password.RequireLowercase = false;
+            options.Password.RequireUppercase = false;
+            options.Password.RequireDigit = false;
         })
         .AddEntityFrameworkStores<ApplicationDbContext>()
         .AddSignInManager();

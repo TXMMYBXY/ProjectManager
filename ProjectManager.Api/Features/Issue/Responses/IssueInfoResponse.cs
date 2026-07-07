@@ -10,7 +10,7 @@ public class IssueInfoResponse
     [JsonPropertyName("id")]
     public int Id { get; set; }
     [JsonPropertyName("title")]
-    public string Title { get; set; }
+    public string Title { get; set; } = string.Empty;
     [JsonPropertyName("status")]
     public IssueStatus Status { get; set; }
     [JsonPropertyName("comments")]
@@ -18,9 +18,9 @@ public class IssueInfoResponse
     [JsonPropertyName("priority")]
     public byte Priority { get; set; }
     [JsonPropertyName("project")]
-    public ProjectSummaryDto Project { get; set; }
+    public ProjectSummaryDto Project { get; set; } = null!;
     [JsonPropertyName("author")]
-    public EmployeeSummaryDto Author { get; set; }
+    public EmployeeSummaryDto Author { get; set; } = null!;
     [JsonPropertyName("executor")]
-    public EmployeeSummaryDto Executor { get; set; }
+    public EmployeeSummaryDto Executor { get; set; } = null!;
 }

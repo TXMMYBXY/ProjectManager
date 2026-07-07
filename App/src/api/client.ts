@@ -12,6 +12,7 @@ import {
   PagedIssueResponse,
   PagedProjectResponse,
   ProjectInfoResponse,
+  ProjectManagerResponse,
   ProjectQueryParams,
   UpdateEmployeeRequest,
   UpdateIssueRequest,
@@ -21,7 +22,9 @@ import {
   TokenResponse,
 } from './types';
 
-const BASE_URL = 'http://localhost:5147';
+// Vite exposes env vars as import.meta.env.VITE_*
+// При сборке/запуске в Docker задаётся VITE_API_URL, иначе по умолчанию используем адрес внутри Docker-сети
+const BASE_URL = (import.meta as any).env?.VITE_API_URL ?? 'http://projectmanager-api:8080';
 
 function buildQuery(params: Record<string, unknown>): string {
   const q = new URLSearchParams();
@@ -73,10 +76,17 @@ export const authApi = {
 // ─── Employee ───────────────────────────────────────────────────────────────
 
 export const employeeApi = {
-  list: (params: EmployeeQueryParams = {}) =>
-    request<PagedEmployeeResponse>(`/api/employee${buildQuery(params as Record<string, unknown>)}`),
+  list: (params: EmployeeQueryParams = {}) => {
+    console.log('employeeApi.list called with:', params);
+    return request<PagedEmployeeResponse>(`/api/employee${buildQuery(params as Record<string, unknown>)}`);
+  },
 
   get: (id: number) => request<EmployeeInfoResponse>(`/api/employee/${id}`),
+
+  getProjectManagers: () => {
+    console.log('employeeApi.getProjectManagers called');
+    return request<ProjectManagerResponse>('/api/employee/project-managers');
+  },
 
   create: (body: CreateEmployeeRequest) =>
     request<void>('/api/employee', { method: 'POST', body: JSON.stringify(body) }),

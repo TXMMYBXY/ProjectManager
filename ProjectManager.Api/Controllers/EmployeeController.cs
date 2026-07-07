@@ -47,6 +47,16 @@ public class EmployeeController : ControllerBase
         return Ok(response);
     }
 
+    [HttpGet("project-managers")]
+    public async Task<ActionResult<ProjectManagerResponse>> GetProjectManagersAndDirectors()
+    {
+        var responseDto = await _employeeService.GetProjectManagersAsync();
+
+        var response = _mapper.Map<ProjectManagerResponse>(responseDto);
+
+        return Ok(response);
+    }
+
     [HttpPost]
     [Authorize(Policy = Policy.DirectorOnly)]
     public async Task<ActionResult> CreateEmployee([FromBody] CreateEmployeeRequest request)

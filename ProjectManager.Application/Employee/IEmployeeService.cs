@@ -14,4 +14,5 @@ public interface IEmployeeService
     Task<int> BulkDeleteEmployeesAsync(IReadOnlyList<int> ids);
     Task<bool> DeleteProjectFromEmployeeAsync(int projectId, int employeeId);
     Task<int> BulkDeleteProjectsFromEmployeeAsync(IReadOnlyList<int> projectIds, int employeeId);
+    Task<ProjectManagerDto> GetProjectManagersAsync();
 }

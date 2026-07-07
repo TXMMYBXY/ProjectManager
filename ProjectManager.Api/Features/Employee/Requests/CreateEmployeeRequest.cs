@@ -8,19 +8,19 @@ public class CreateEmployeeRequest
 {
     [Required]
     [JsonPropertyName("firstName")]
-    public string FirstName { get; set; }
+    public string FirstName { get; set; } = string.Empty;
     [Required]
     [JsonPropertyName("lastName")]
-    public string LastName { get; set; }
+    public string LastName { get; set; } = string.Empty;
     [JsonPropertyName("patronymic")]
     public string? Patronymic { get; set; }
     [Required]
     [EmailAddress]
     [JsonPropertyName("email")]
-    public string Email { get; set; }
+    public string Email { get; set; } = string.Empty;
     [Required]
     [JsonPropertyName("password")]
-    public string Password { get; set; }
+    public string Password { get; set; } = string.Empty;
     [JsonPropertyName("role")]
     [JsonConverter(typeof(JsonStringEnumConverter))]
     public UserRole Role { get; set; }

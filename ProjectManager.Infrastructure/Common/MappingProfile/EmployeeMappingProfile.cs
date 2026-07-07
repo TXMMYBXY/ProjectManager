@@ -14,5 +14,7 @@ public class EmployeeMappingProfile : Profile
                 opts.Condition((src, dest, srcMember) => srcMember != null));
 
         CreateMap<Entities.Models.Employee, EmployeeInfoDto>();
+
+        CreateMap<Entities.Models.Employee, EmployeeItemDto>();
     }
 }

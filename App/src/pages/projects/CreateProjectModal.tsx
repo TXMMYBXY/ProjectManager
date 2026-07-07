@@ -4,7 +4,7 @@ import { Modal } from '../../components/ui/Modal';
 import { Input, Select } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
 import { useToast } from '../../components/ui/Toast';
-import { EmployeeItemDto, UserRole } from '../../api/types';
+import { EmployeeItemDto } from '../../api/types';
 
 interface Props {
   isOpen: boolean;
@@ -29,7 +29,17 @@ export const CreateProjectModal: React.FC<Props> = ({ isOpen, onClose, onCreated
 
   useEffect(() => {
     if (isOpen) {
-      employeeApi.list({ PageSize: 100, role: UserRole.Manager }).then((r) => setManagers(r.employees ?? [])).catch(() => {});
+      console.log('Fetching project managers using getProjectManagers...');
+      // get eligible project managers and directors from API
+      employeeApi
+        .getProjectManagers()
+        .then((r) => {
+          console.log('Received project managers:', r);
+          setManagers((r.projectManagers ?? []) as EmployeeItemDto[]);
+        })
+        .catch((err) => {
+          console.error('Failed to fetch project managers:', err);
+        });
     }
   }, [isOpen]);
 
@@ -62,7 +72,15 @@ export const CreateProjectModal: React.FC<Props> = ({ isOpen, onClose, onCreated
       toast('success', 'Project created successfully');
       onCreated();
       onClose();
-      setForm({ title: '', companyCustomer: '', companyExecutor: '', startDate: '', finishDate: '', priority: '5', projectManagerId: '' });
+      setForm({
+        title: '',
+        companyCustomer: '',
+        companyExecutor: '',
+        startDate: '',
+        finishDate: '',
+        priority: '5',
+        projectManagerId: '',
+      });
       setErrors({});
     } catch (err: any) {
       toast('error', err.message || 'Failed to create project');

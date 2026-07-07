@@ -86,7 +86,6 @@ public class EmployeeService : IEmployeeService
 
         if (_userManager == null)
         {
-            // In tests UserManager may be not provided; fall back to repository creation
             await _employeeRepository.CreateAsync(employee);
             await _employeeRepository.SaveChangesAsync();
             _logger.LogInformation("Employee successfully created with id {0}", employee.Id);
@@ -205,5 +204,20 @@ public class EmployeeService : IEmployeeService
         ConflictException.ThrowIf(!exists, "Employee not found");
         
         return await _employeeProjectRepository.DeleteRangeProjectsAsync(employeeId, projectIds);
+    }
+
+    public async Task<ProjectManagerDto> GetProjectManagersAsync()
+    {
+        var managers = await _userManager.GetUsersInRoleAsync(UserRole.Manager.ToString());
+        var directors = await _userManager.GetUsersInRoleAsync(UserRole.Director.ToString());
+        
+        var all = managers.Concat(directors);
+
+        var response = new ProjectManagerDto
+        {
+            ProjectManagers = _mapper.Map<IReadOnlyList<EmployeeItemDto>>(managers.Concat(directors))
+        };
+
+        return response;
     }
 }

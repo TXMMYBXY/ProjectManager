@@ -5,6 +5,10 @@ export enum IssueStatus {
   Done = 2,
 }
 
+export interface ProjectManagerResponse {
+  projectManagers: EmployeeItemDto[] | null;
+}
+
 export enum UserRole {
   Director = 1,
   Manager = 2,

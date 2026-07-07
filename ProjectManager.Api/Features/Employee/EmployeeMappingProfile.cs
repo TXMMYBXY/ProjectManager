@@ -21,5 +21,7 @@ public class EmployeeMappingProfile : Profile
         CreateMap<UpdateEmployeeRequest, UpdateEmployeeDto>();
         
         CreateMap<EmployeeInfoDto, UpdateEmployeeResponse>();
+
+        CreateMap<ProjectManagerDto, ProjectManagerResponse>();
     }
 }

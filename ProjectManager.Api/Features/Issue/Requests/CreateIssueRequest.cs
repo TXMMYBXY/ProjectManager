@@ -8,7 +8,7 @@ public class CreateIssueRequest
 {
     [Required]
     [JsonPropertyName("title")]
-    public string Title { get; set; }
+    public string Title { get; set; } = string.Empty;
     [JsonPropertyName("status")]
     public IssueStatus Status { get; set; }
     [JsonPropertyName("comments")]
