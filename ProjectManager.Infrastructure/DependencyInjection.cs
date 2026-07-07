@@ -3,10 +3,12 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
 using ProjectManager.Application.Account;
 using ProjectManager.Application.Common;
+using ProjectManager.Application.Document;
 using ProjectManager.Application.Employee;
 using ProjectManager.Application.Issue;
 using ProjectManager.Application.Project;
@@ -15,6 +17,7 @@ using ProjectManager.Infrastructure.Common;
 using ProjectManager.Infrastructure.Common.MappingProfile;
 using ProjectManager.Infrastructure.Configuration;
 using ProjectManager.Infrastructure.Data;
+using ProjectManager.Infrastructure.Document;
 using ProjectManager.Infrastructure.Employee;
 using ProjectManager.Infrastructure.Issue;
 using ProjectManager.Infrastructure.Project;
@@ -38,12 +41,16 @@ public static class DependencyInjection
         services.AddScoped<IAccountService, AccountService>();
         services.AddScoped<IJwtService, JwtService>();
         services.AddScoped<ICurrentUser, CurrentUser>();
+        services.AddScoped<IFileStorageService, FileStorageService>();
+        services.AddScoped<IDocumentService, DocumentService>();
         
         services.AddScoped(typeof(IBaseRepository<>), typeof(BaseRepository<>));
         services.AddScoped<IProjectRepository, ProjectRepository>();
         services.AddScoped<IEmployeeRepository, EmployeeRepository>();
         services.AddScoped<IIssueRepository, IssueRepository>();
         services.AddScoped<IEmployeeProjectRepository, EmployeeProjectRepository>();
+        services.AddScoped<IDocumentRepository, DocumentRepository>();
+
         
         var dataBaseConnectionSettings =
             configuration.GetSection("DataBaseConnectionSettings").Get<DataBaseConnectionSettings>();
@@ -59,17 +66,20 @@ public static class DependencyInjection
                         maxRetryDelay: TimeSpan.FromSeconds(5),
                         errorNumbersToAdd: null);
                 });
+
+            // Игнорируем предупреждение о несинхронизированных миграциях при запуске автоприменения миграций.
+            options.ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning));
         });
         
         services.AddHttpContextAccessor();
         
         services.AddIdentity<Entities.Models.Employee, IdentityRole<int>>(options =>
         {
-            options.Password.RequireDigit = true;
-            options.Password.RequireLowercase = true;
-            options.Password.RequireUppercase = true;
-            options.Password.RequireNonAlphanumeric = true;
             options.Password.RequiredLength = 4;
+            options.Password.RequireNonAlphanumeric = false;
+            options.Password.RequireLowercase = false;
+            options.Password.RequireUppercase = false;
+            options.Password.RequireDigit = false;
         })
         .AddEntityFrameworkStores<ApplicationDbContext>()
         .AddSignInManager();

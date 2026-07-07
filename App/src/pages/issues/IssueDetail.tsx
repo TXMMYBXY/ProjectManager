@@ -74,13 +74,22 @@ export const IssueDetail: React.FC = () => {
     if (!id) return;
     setSaving(true);
     try {
-      await issueApi.update(Number(id), {
-        title: editForm.title || null,
-        status: editForm.status !== '' ? Number(editForm.status) as IssueStatus : null,
-        comments: { hasValue: true, value: editForm.comments || null },
-        priority: editForm.priority ? Number(editForm.priority) : null,
-        executorId: editForm.executorId ? Number(editForm.executorId) : null,
-      });
+      // send only changed fields
+      const body: any = {};
+      if ((issue?.title ?? '') !== editForm.title) body.title = editForm.title || null;
+      if (String(issue?.status ?? '') !== editForm.status) body.status = editForm.status !== '' ? Number(editForm.status) as IssueStatus : null;
+      if ((issue?.comments ?? '') !== editForm.comments) body.comments = { hasValue: true, value: editForm.comments || null };
+      if (String(issue?.priority ?? '') !== editForm.priority) body.priority = editForm.priority ? Number(editForm.priority) : null;
+      const originalExecutor = issue?.executor ? String(issue.executor.id) : '';
+      if (originalExecutor !== editForm.executorId) body.executorId = editForm.executorId ? Number(editForm.executorId) : null;
+
+      if (Object.keys(body).length === 0) {
+        toast('info', 'No changes to save');
+        setEditing(false);
+        return;
+      }
+
+      await issueApi.update(Number(id), body);
       toast('success', 'Issue updated');
       setEditing(false);
       load();

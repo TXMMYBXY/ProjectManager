@@ -10,3 +10,4 @@ riderModule.iml
 .vs/
 .vs
 /ProjectManager.Api/Logs
+/App/node_modules

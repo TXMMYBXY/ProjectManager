@@ -7,13 +7,13 @@ public class CreateProjectRequest
 {
     [Required]
     [JsonPropertyName("title")]
-    public string Title { get; set; }
+    public string Title { get; set; } = string.Empty;
     [Required]
     [JsonPropertyName("companyCustomer")]
-    public string CompanyCustomer { get; set; }
+    public string CompanyCustomer { get; set; } = string.Empty;
     [Required]
     [JsonPropertyName("companyExecutor")]
-    public string CompanyExecutor { get; set; }
+    public string CompanyExecutor { get; set; } = string.Empty;
     [Required]
     [JsonPropertyName("startDate")]
     public DateTime StartDate { get; set; }

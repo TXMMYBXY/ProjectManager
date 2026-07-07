@@ -5,5 +5,5 @@ namespace ProjectManager.Api.Features.Employee.Requests;
 public class BulkInsertRequest
 {
     [JsonPropertyName("ids")]
-    public IReadOnlyList<int> Ids { get; set; }
+    public IReadOnlyList<int> Ids { get; set; } = [];
 }

@@ -81,13 +81,22 @@ export const EmployeeDetail: React.FC = () => {
     if (!id) return;
     setSaving(true);
     try {
-      await employeeApi.update(Number(id), {
-        firstName: editForm.firstName || null,
-        lastName: editForm.lastName || null,
-        patronymic: { hasValue: true, value: editForm.patronymic || null },
-        email: editForm.email || null,
-        role: editForm.role || null,
-      });
+      // send only changed fields
+      const body: any = {};
+      if ((employee?.firstName ?? '') !== editForm.firstName) body.firstName = editForm.firstName || null;
+      if ((employee?.lastName ?? '') !== editForm.lastName) body.lastName = editForm.lastName || null;
+      if ((employee?.patronymic ?? '') !== editForm.patronymic) body.patronymic = { hasValue: true, value: editForm.patronymic || null };
+      if ((employee?.email ?? '') !== editForm.email) body.email = editForm.email || null;
+      // role field uses empty string as "keep existing"
+      if (editForm.role && editForm.role !== '') body.role = editForm.role;
+
+      if (Object.keys(body).length === 0) {
+        toast('info', 'No changes to save');
+        setEditing(false);
+        return;
+      }
+
+      await employeeApi.update(Number(id), body);
       toast('success', 'Employee updated');
       setEditing(false);
       load();

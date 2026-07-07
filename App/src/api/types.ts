@@ -5,6 +5,15 @@ export enum IssueStatus {
   Done = 2,
 }
 
+export interface ProjectManagerResponse {
+  projectManagers: EmployeeItemDto[] | null;
+}
+
+export interface DocumentDto {
+  id: number;
+  title: string;
+}
+
 export enum UserRole {
   Director = 1,
   Manager = 2,
@@ -120,6 +129,11 @@ export interface ProjectInfoResponse {
   projectManager?: EmployeeSummaryDto;
   employees?: EmployeeItemDto[];
   issues?: IssueItemDto[];
+  documents?: DocumentDto[];
+}
+
+export interface DocumentsResponse {
+  documents?: DocumentDto[] | null;
 }
 
 export interface IssueInfoResponse {

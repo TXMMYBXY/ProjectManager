@@ -9,11 +9,11 @@ public class ProjectInfoResponse
     [JsonPropertyName("id")]
     public int Id { get; set; }
     [JsonPropertyName("title")]
-    public string Title { get; set; }
+    public string Title { get; set; } = string.Empty;
     [JsonPropertyName("companyCustomer")]
-    public string CompanyCustomer { get; set; }
+    public string CompanyCustomer { get; set; } = string.Empty;
     [JsonPropertyName("companyExecuter")]
-    public string CompanyExecuter { get; set; }
+    public string CompanyExecuter { get; set; } = string.Empty;
     [JsonPropertyName("startDate")]
     public DateTime StartDate { get; set; }
     [JsonPropertyName("finishDate")]
@@ -21,9 +21,9 @@ public class ProjectInfoResponse
     [JsonPropertyName("priority")]
     public byte Priority { get; set; }
     [JsonPropertyName("projectManager")]
-    public EmployeeSummaryDto ProjectManager { get; set; }
+    public EmployeeSummaryDto ProjectManager { get; set; } = null!;
     [JsonPropertyName("employees")]
-    public IReadOnlyList<EmployeeItemDto> Employees { get; set; }
+    public IReadOnlyList<EmployeeItemDto> Employees { get; set; } = [];
     [JsonPropertyName("issues")]
-    public IReadOnlyList<IssueItemDto> Issues { get; set; }
+    public IReadOnlyList<IssueItemDto> Issues { get; set; } = [];
 }

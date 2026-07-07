@@ -68,7 +68,6 @@ public class AccountService : IAccountService
         ConflictException.ThrowIf(passwordMatch == PasswordVerificationResult.Failed, 
             "Invalid email or password");
         
-        // get roles from Identity and pick the first one (if any)
         var roles = await _userManager.GetRolesAsync(employee);
         var roleName = roles.FirstOrDefault() ?? nameof(ProjectManager.Entities.Enums.UserRole.Employee);
         var token = _jwtService.GenerateToken(employee, roleName);

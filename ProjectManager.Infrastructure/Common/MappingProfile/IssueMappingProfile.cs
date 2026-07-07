@@ -11,8 +11,11 @@ public class IssueMappingProfile : Profile
         CreateMap<CreateIssueDto, Entities.Models.Issue>();
         
         CreateMap<UpdateIssueDto, Entities.Models.Issue>()
-            .ForAllMembers(opts=>
-                opts.Condition((src, dest, srcMember) => srcMember != null));
+            .ForMember(dest => dest.Title, opt => opt.Condition(src => src.Title != null))
+            .ForMember(dest => dest.Status, opt => opt.Condition(src => src.Status != null))
+            .ForMember(dest => dest.Priority, opt => opt.Condition(src => src.Priority != null))
+            .ForMember(dest => dest.AuthorId, opt => opt.Condition(src => src.AuthorId != null))
+            .ForMember(dest => dest.ExecutorId, opt => opt.Condition(src => src.ExecutorId != null));
 
         CreateMap<Entities.Models.Issue, IssueInfoDto>();
     }    

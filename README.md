@@ -1,3 +1,146 @@
+# ProjectManager
+Сервис для управления проектами и сотрудниками с поддержкой статусов, документов и контейнеризацией через Docker.
+
+## Содержание
+- [ProjectManager](#projectmanager)
+  - [Содержание](#содержание)
+  - [Стек технологий](#стек-технологий)
+    - [Backend](#backend)
+    - [Frontend](#frontend)
+  - [Версии пакетов](#версии-пакетов)
+  - [Архитектура проекта](#архитектура-проекта)
+  - [Архитектурный подход](#архитектурный-подход)
+  - [Docker архитектура](#docker-архитектура)
+  - [Установка и запуск](#установка-и-запуск)
+  - [Тестовые пользователи](#тестовые-пользователи)
+  - [Основные возможности](#основные-возможности)
+  - [Бизнес-правила](#бизнес-правила)
+  - [API Документация](#api-документация)
+  - [Автор](#автор)
+
+
+## Стек технологий
+### Backend
+- ASP.NET Core 9
+- Entity Framework Core
+- MS SQL Server 2022
+- AutoMapper
+- Scalar
+- Docker
+### Frontend
+- React (Vite)
+- TailwindCSS
+
+## Версии пакетов
+- **Microsoft.AspNetCore.OpenApi:** 9.0.17
+- **Microsoft.EntityFrameworkCore.Design:** 9.0.0
+- **Scalar.AspNetCore:** 2.16.3
+- **Serilog.AspNetCore:** 7.0.0
+- **Serilog.Sinks.File:** 6.0.0
+- **Serilog.Sinks.Console:** 4.1.0
+- **Serilog.Settings.Configuration:** 7.0.0
+- **AutoMapper.Extensions.Microsoft.DependencyInjection:** 12.0.1
+- **Microsoft.EntityFrameworkCore:** 9.0.0
+- **Microsoft.EntityFrameworkCore.Abstractions:** 9.0.0
+- **Microsoft.EntityFrameworkCore.SqlServer:** 9.0.0
+- **Microsoft.EntityFrameworkCore.Relational:** 9.0.0
+- **Microsoft.Extensions.Configuration:** 9.0.0
+- **Microsoft.Extensions.Configuration.Binder:** 9.0.0
+- **Microsoft.AspNetCore.Authentication.JwtBearer:** 9.0.0
+- **Microsoft.AspNetCore.Identity.EntityFrameworkCore:** 9.0.0
+
+## Архитектура проекта
+
+```
+ProjectManager
+│
+├── ProjectManager.Api                 → Web API (Controllers, Middleware)
+├── ProjectManager.Application         → Бизнес-логика, DTO, сервисы
+├── ProjectManager.Entities            → Модели и DbContext
+├── ProjectManager.Infrastructure      → Репозитории, реализация зависимостей
+├── ProjectManager.Infrastructure.Test → Тестовый проект проверки бизнес-логики
+├── App                                → React клиент
+├── compose.yaml                       → Оркестрация контейнеров
+└── .env.example                       → Пример конфигурации
+```
+
+## Архитектурный подход
+- Разделение слоёв (API / Application / Infrastructure / Entities / App)
+- Repository Pattern
+- Service Layer
+- DTO separation
+- Частичное обновление (PATCH)
+- Production-ready Docker setup
+- MicrosoftIdentity
+
+## Docker архитектура
+```
+Browser
+   ↓
+Server (Client)
+   ↓
+ASP.NET API
+   ↓
+SQL Server
+```
+## Установка и запуск
+Клонировать репозиторий:
+```bash
+git clone https://github.com/TXMMYBXY/ProjectManager.git
+```
+
+Создать файл конфигурации из примера:
+```bash
+cp .env.example .env
+```
+Настроить файл конфигурации `.env` и запустить контейнеры
+
+```bash
+docker compose up --build
+```
+Удалить контейнеры
+```bash
+docker compose down
+```
+Чтобы удалить контейнеры и том где хранятся данные
+```bash
+docker compose down -v
+```
+
+## Тестовые пользователи (seed)
+При первом запуске приложение автоматически создаёт набор начальных тестовых пользователей и ролей (см. Program.cs). Это удобно для локальной разработки и быстрого входа в приложение.
+
+Создаваемые роли:
+- Director
+- Manager
+- Employee
+
+Создаваемые пользователи (по одному для каждой роли):
+- director@example.com / пароль: 1234 — роль: Director
+- manager@example.com / пароль: 1234 — роль: Manager
+- employee@example.com / пароль: 1234 — роль: Employee
+
+Пояснения:
+- Пользователи создаются только если в базе данных таких email ещё нет.
+- При необходимости вы можете изменить эти данные прямо в ProjectManager.Api/Program.cs перед сборкой контейнера.
+- Для production окружения рекомендуется отключить автоматическое сидирование и использовать безопасные пароли.
+
+## Основные возможности
+- CRUD проектов
+- CRUD сотрудников
+- CRUD задач
+- Назначение руководителя проекта
+- Управление составом команды
+- Статусы задач (`ToDo` / `InProgress` / `Done`)
+- Валидация бизнес-правил
+- Загрузка и скачивание документов
+- Автоматические миграции при старте
+
+## API Документация
+<details>
+<summary>Документация</summary>
+
+```json
 {
   "openapi": "3.0.1",
   "info": {
@@ -2472,3 +2615,10 @@
     }
   ]
 }
+```
+
+</details>
+
+
+## Автор
+[Михаил](https://github.com/TXMMYBXY)

@@ -12,7 +12,7 @@ namespace ProjectManager.Infrastructure.Employee;
 public class EmployeeRepository : BaseRepository<Entities.Models.Employee>, IEmployeeRepository
 {
     private readonly ApplicationDbContext _dbContext;
-    
+
     public EmployeeRepository(ApplicationDbContext dbContext) : base(dbContext)
     {
         _dbContext = dbContext;
@@ -22,15 +22,15 @@ public class EmployeeRepository : BaseRepository<Entities.Models.Employee>, IEmp
         Expression<Func<Entities.Models.Employee, bool>>? predicate = null)
     {
         var query = _dbContext.Employees.AsQueryable();
-        
+
         if (predicate != null)
             query = query.Where(predicate);
-        
+
         query = query
             .AsNoTracking()
             .ApplyFilter(filter)
-            .ApplySorting(filter); 
-        
+            .ApplySorting(filter);
+
         var totalCount = await query.CountAsync();
 
         var result = query
@@ -47,11 +47,11 @@ public class EmployeeRepository : BaseRepository<Entities.Models.Employee>, IEmp
         return (await result.ToListAsync(), totalCount);
     }
 
-    public async Task<EmployeeInfoDto?> GetEmployeeByIdAsync(int employeeId, 
+    public async Task<EmployeeInfoDto?> GetEmployeeByIdAsync(int employeeId,
         Expression<Func<Entities.Models.Employee, bool>>? predicate = null)
     {
         var query = _dbContext.Employees.AsQueryable();
-        
+
         if (predicate != null)
             query = query.Where(predicate);
 

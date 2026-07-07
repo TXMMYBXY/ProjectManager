@@ -1,23 +1,72 @@
 ﻿services:
   projectmanager.api:
+    container_name: projectmanager-api
+    env_file:
+      - .env
+    user: root
     image: projectmanager.api
     build:
       context: .
       dockerfile: ProjectManager.Api/Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - ConnectionStrings__DefaultConnection=Server=db;Database=ProjectManager;User Id=sa;Password=${DataBaseConnectionSettings__Password};TrustServerCertificate=True;
     volumes:
       - project_logs:/app/Logs
+      - project_dataprotection:/home/app/.aspnet/DataProtection-Keys
+      - project_storage:/app/storage
+    depends_on:
+      - db
+    networks:
+      - projectmanager-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/ping || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  projectmanager.client:
+    container_name: projectmanager-client
+    env_file:
+      - .env
+    image: projectmanager.client
+    build:
+      context: .
+      dockerfile: App/Dockerfile
+      args:
+        VITE_API_URL: ${VITE_API_URL}
+    ports:
+      - "3000:80"
+    environment:
+      VITE_API_URL: ${VITE_API_URL}
+    depends_on:
+      - projectmanager.api
+    networks:
+      - projectmanager-network
 
   db:
+    env_file:
+      - .env
     image: mcr.microsoft.com/mssql/server:2022-latest
     container_name: projectmanager-db
-    ports:
-      - "1433:1433"
     environment:
-      SA_PASSWORD: 123QazWsxEdc
-      ACCEPT_EULA: Y
+      SA_PASSWORD: ${DataBaseConnectionSettings__Password}
+      ACCEPT_EULA: "Y"
     volumes:
       - mssql_data:/var/opt/mssql
+    ports:
+      - "1433:1433"
+    networks:
+      - projectmanager-network
 
 volumes:
   project_storage:
   mssql_data:
+  project_logs:
+  project_dataprotection:
+
+networks:
+  projectmanager-network:
+    driver: bridge
