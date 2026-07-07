@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, Edit2, Trash2, Save, X, Users, CircleDot, Plus, UserMinus } from 'lucide-react';
-import { projectApi, employeeApi } from '../../api/client';
+import { ArrowLeft, Edit2, Trash2, Save, X, Users, CircleDot, Plus, UserMinus, UploadCloud, DownloadCloud } from 'lucide-react';
+import { projectApi, employeeApi, documentApi } from '../../api/client';
 import { ProjectInfoResponse, EmployeeItemDto, IssueStatus, IssueStatusLabel } from '../../api/types';
 import { Button } from '../../components/ui/Button';
 import { Input, Select } from '../../components/ui/Input';
@@ -54,6 +54,10 @@ export const ProjectDetail: React.FC = () => {
   const [selectedEmployees, setSelectedEmployees] = useState<Set<number>>(new Set());
   const [bulkRemoving, setBulkRemoving] = useState(false);
   const [bulkRemoveLoading, setBulkRemoveLoading] = useState(false);
+  const [dragActive, setDragActive] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [deletingDocId, setDeletingDocId] = useState<number | null>(null);
+  const [docDeleteLoading, setDocDeleteLoading] = useState(false);
 
   const [editForm, setEditForm] = useState({
     title: '',
@@ -69,6 +73,12 @@ export const ProjectDetail: React.FC = () => {
     setLoading(true);
     try {
       const res = await projectApi.get(Number(id));
+      try {
+        const docs = await documentApi.list(Number(id));
+        res.documents = docs.documents ?? [];
+      } catch (e) {
+        // ignore documents load error, project still shows
+      }
       setProject(res);
       setEditForm({
         title: res.title,
@@ -84,6 +94,53 @@ export const ProjectDetail: React.FC = () => {
       setLoading(false);
     }
   };
+
+  const handleFiles = async (files: FileList | null) => {
+    if (!id || !files || files.length === 0) return;
+    setUploading(true);
+    try {
+      // upload files sequentially
+      for (let i = 0; i < files.length; i++) {
+        const f = files[i];
+        const fd = new FormData();
+        fd.append('file', f);
+        await documentApi.upload(Number(id), fd);
+      }
+      toast('success', 'File(s) uploaded');
+      load();
+    } catch (e: any) {
+      toast('error', e.message || 'Upload failed');
+    } finally {
+      setUploading(false);
+      setDragActive(false);
+    }
+  };
+
+  const onDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      handleFiles(e.dataTransfer.files);
+      e.dataTransfer.clearData();
+    }
+  };
+
+  const onDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(true);
+  };
+
+  const onDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+  };
+
+  const fileInputRef = React.createRef<HTMLInputElement>();
+  const triggerFileSelect = () => fileInputRef.current?.click();
+  const onFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => handleFiles(e.target.files);
 
   const loadEmployees = async () => {
     try {
@@ -220,6 +277,20 @@ export const ProjectDetail: React.FC = () => {
     });
   };
 
+  const handleDeleteDocument = async (documentId: number) => {
+    setDocDeleteLoading(true);
+    try {
+      await documentApi.delete(documentId);
+      toast('success', 'Document deleted');
+      setDeletingDocId(null);
+      load();
+    } catch (e: any) {
+      toast('error', e.message || 'Failed to delete document');
+    } finally {
+      setDocDeleteLoading(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="p-8 animate-pulse space-y-4">
@@ -265,6 +336,56 @@ export const ProjectDetail: React.FC = () => {
               <Button variant="outline" size="sm" onClick={() => setEditing(true)}><Edit2 size={15} /> Edit</Button>
               <Button variant="danger" size="sm" onClick={() => setDeleting(true)}><Trash2 size={15} /> Delete</Button>
             </>
+          )}
+        </div>
+      </div>
+
+      {/* Documents */}
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mt-6">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-base font-semibold text-gray-700">Documents ({project.documents?.length ?? 0})</h2>
+          <div className="flex items-center gap-2">
+            <input ref={fileInputRef} type="file" className="hidden" onChange={onFileInputChange} />
+            <Button size="sm" variant="ghost" onClick={triggerFileSelect} disabled={uploading}>
+              <UploadCloud size={14} /> Upload
+            </Button>
+          </div>
+        </div>
+
+        <div
+          onDrop={onDrop}
+          onDragOver={onDragOver}
+          onDragEnter={onDragOver}
+          onDragLeave={onDragLeave}
+          className={`w-full p-6 rounded-lg border-2 ${dragActive ? 'border-indigo-400 bg-indigo-50' : 'border-dashed border-gray-200'} mb-4`}
+        >
+          <div className="flex flex-col items-center justify-center text-center">
+            <UploadCloud size={32} className="text-gray-400" />
+            <p className="text-sm text-gray-500 mt-2">Drag & drop files here or click Upload to select files</p>
+            {uploading && <p className="text-xs text-gray-400 mt-2">Uploading...</p>}
+          </div>
+        </div>
+
+        <div className="divide-y divide-gray-50">
+          {(project.documents ?? []).length === 0 ? (
+            <p className="text-center text-gray-400 py-6 text-sm">No documents</p>
+          ) : (
+            (project.documents ?? []).map((d) => (
+              <div key={d.id} className="flex items-center justify-between px-2 py-3">
+                <div className="flex items-center gap-3">
+                  <svg className="w-5 h-5 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><path d="M14 2v6h6"></path></svg>
+                  <span className="text-sm text-gray-700">{d.title}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button size="sm" variant="outline" onClick={() => documentApi.download(d.id, d.title)}>
+                    <DownloadCloud size={14} /> Download
+                  </Button>
+                  <Button size="sm" variant="danger" onClick={() => setDeletingDocId(d.id)}>
+                    <Trash2 size={14} /> Delete
+                  </Button>
+                </div>
+              </div>
+            ))
           )}
         </div>
       </div>
@@ -468,6 +589,15 @@ export const ProjectDetail: React.FC = () => {
         title="Remove Employees"
         message={`Remove ${selectedEmployees.size} selected employees from the project?`}
         loading={bulkRemoveLoading}
+      />
+
+      <ConfirmDialog
+        isOpen={!!deletingDocId}
+        onClose={() => setDeletingDocId(null)}
+        onConfirm={() => deletingDocId && handleDeleteDocument(deletingDocId)}
+        title="Delete Document"
+        message="Are you sure you want to delete this document?"
+        loading={docDeleteLoading}
       />
     </div>
   );

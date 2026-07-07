@@ -1,4 +1,4 @@
-namespace ProjectManager.Api.Features.Document;
+namespace ProjectManager.Api.Features.Document.Responses;
 
 public class DownloadDocumentResponse
 {

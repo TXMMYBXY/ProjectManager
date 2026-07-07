@@ -3,6 +3,7 @@
     container_name: projectmanager-api
     env_file:
       - .env
+    user: root
     image: projectmanager.api
     build:
       context: .
@@ -14,6 +15,7 @@
     volumes:
       - project_logs:/app/Logs
       - project_dataprotection:/home/app/.aspnet/DataProtection-Keys
+      - project_storage:/app/storage
     depends_on:
       - db
     networks:

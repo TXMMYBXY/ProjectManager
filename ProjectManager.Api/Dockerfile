@@ -8,8 +8,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf 
 RUN mkdir -p /home/app/.aspnet/DataProtection-Keys \
 	&& chown -R app:app /home/app/.aspnet/DataProtection-Keys || true
 
-# Вернём неподпривилегированного пользователя, если переменная определена
-USER app
+# (Оставляем запуск от root в контейнере для dev-окружения, чтобы обеспечить права на монтированные тома)
 
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 ARG BUILD_CONFIGURATION=Release

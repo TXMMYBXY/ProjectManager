@@ -1,4 +1,3 @@
-using AutoMapper;
 using ProjectManager.Application.Common;
 using ProjectManager.Application.Common.Exceptions;
 using ProjectManager.Application.Document;
@@ -66,6 +65,21 @@ public class DocumentService : IDocumentService
             FilePath = document.FilePath,
             FileName = document.Title
         };
+    }
+
+    public async Task<DocumentsDto> GetAllDocumentsByProjectIdAsync(int projectId)
+    {
+        var documentsDto = await _documentRepository.GetAllDocumentsByProjectIdAsync(projectId);
+        
+        return new DocumentsDto
+        {
+            Documents = documentsDto ?? Array.Empty<DocumentItemDto>()
+        };
+    }
+
+    public async Task DeleteDocumentByIdAsync(int id)
+    {
+        await _documentRepository.DeleteByIdAsync(id);
     }
 
     private string _ClearName(string input)

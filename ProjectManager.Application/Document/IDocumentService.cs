@@ -15,4 +15,7 @@ public interface IDocumentService
     /// </summary>
     /// <returns>FileName and FilePath in DTO</returns>
     Task<DownloadDocumentDto> DownloadDocumentAsync(int documentId);
+
+    Task<DocumentsDto> GetAllDocumentsByProjectIdAsync(int projectId);
+    Task DeleteDocumentByIdAsync(int id);
 }

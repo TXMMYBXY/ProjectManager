@@ -4,7 +4,12 @@ namespace ProjectManager.Infrastructure.Common;
 
 public class FileStorageService : IFileStorageService
 {
-    private readonly string _rootPath = "/app/storage"; 
+    private readonly string _rootPath;
+
+    public FileStorageService()
+    {
+        _rootPath = Environment.GetEnvironmentVariable("FILE_STORAGE_PATH") ?? "/app/storage";
+    }
 
     public async Task<string> SaveFileAsync(
         Stream fileStream,

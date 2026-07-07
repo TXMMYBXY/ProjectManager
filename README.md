@@ -12,6 +12,7 @@
   - [Архитектурный подход](#архитектурный-подход)
   - [Docker архитектура](#docker-архитектура)
   - [Установка и запуск](#установка-и-запуск)
+  - [Тестовые пользователи](#тестовые-пользователи)
   - [Основные возможности](#основные-возможности)
   - [Бизнес-правила](#бизнес-правила)
   - [API Документация](#api-документация)
@@ -106,6 +107,24 @@ docker compose down
 docker compose down -v
 ```
 
+## Тестовые пользователи (seed)
+При первом запуске приложение автоматически создаёт набор начальных тестовых пользователей и ролей (см. Program.cs). Это удобно для локальной разработки и быстрого входа в приложение.
+
+Создаваемые роли:
+- Director
+- Manager
+- Employee
+
+Создаваемые пользователи (по одному для каждой роли):
+- director@example.com / пароль: 1234 — роль: Director
+- manager@example.com / пароль: 1234 — роль: Manager
+- employee@example.com / пароль: 1234 — роль: Employee
+
+Пояснения:
+- Пользователи создаются только если в базе данных таких email ещё нет.
+- При необходимости вы можете изменить эти данные прямо в ProjectManager.Api/Program.cs перед сборкой контейнера.
+- Для production окружения рекомендуется отключить автоматическое сидирование и использовать безопасные пароли.
+
 ## Основные возможности
 - CRUD проектов
 - CRUD сотрудников
@@ -116,10 +135,6 @@ docker compose down -v
 - Валидация бизнес-правил
 - Загрузка и скачивание документов
 - Автоматические миграции при старте
-  
-## Бизнес-правила
-- Проект вне Backlog должен иметь руководителя
-- При удалении сотрудника управляемые проекты архивируются
 
 ## API Документация
 <details>
@@ -240,6 +255,130 @@ docker compose down -v
       "post": {
         "tags": [
           "Auth"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/document/project-id/{projectId}": {
+      "get": {
+        "tags": [
+          "Document"
+        ],
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentsResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentsResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentsResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/document/{projectId}/upload": {
+      "post": {
+        "tags": [
+          "Document"
+        ],
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "File": {
+                    "$ref": "#/components/schemas/IFormFile"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/document/{documentId}/download": {
+      "get": {
+        "tags": [
+          "Document"
+        ],
+        "parameters": [
+          {
+            "name": "documentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/document/{id}": {
+      "delete": {
+        "tags": [
+          "Document"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
         ],
         "responses": {
           "200": {
@@ -1782,6 +1921,29 @@ docker compose down -v
           }
         }
       },
+      "DocumentItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "title": {
+            "type": "string"
+          }
+        }
+      },
+      "DocumentsResponse": {
+        "type": "object",
+        "properties": {
+          "documents": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DocumentItemDto"
+            }
+          }
+        }
+      },
       "EmployeeInfoResponse": {
         "type": "object",
         "properties": {
@@ -1862,6 +2024,10 @@ docker compose down -v
             "type": "string"
           }
         }
+      },
+      "IFormFile": {
+        "type": "string",
+        "format": "binary"
       },
       "IssueInfoResponse": {
         "type": "object",
@@ -2436,6 +2602,9 @@ docker compose down -v
       "name": "Auth"
     },
     {
+      "name": "Document"
+    },
+    {
       "name": "Employee"
     },
     {
@@ -2447,6 +2616,7 @@ docker compose down -v
   ]
 }
 ```
+
 </details>
 
 
