@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -7,6 +8,7 @@ using ProjectManager.Api.Features.Project.Requests;
 using ProjectManager.Api.Features.Project.Responses;
 using ProjectManager.Application.Project;
 using ProjectManager.Application.Project.Dto;
+using ProjectManager.Application.Utils;
 using ProjectManager.Entities.Enums;
 
 namespace ProjectManager.Api.Controllers;
@@ -30,7 +32,11 @@ public class ProjectController : ControllerBase
     {
         var filter = _mapper.Map<ProjectFilter>(request);
         
-        var responseDto = await _projectService.GetAllProjectsAsync(filter);
+        var responseDto = await _projectService.GetAllProjectsAsync(filter, new CurrentUser
+        {
+            Id = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value),
+            Role = User.FindFirst(ClaimTypes.Role)!.Value
+        });
         
         var response = _mapper.Map<PagedProjectResponse>(responseDto);
 
@@ -40,7 +46,11 @@ public class ProjectController : ControllerBase
     [HttpGet("{id:int}")]
     public async Task<ActionResult<ProjectInfoResponse>> GetProjectById([FromRoute] int id)
     {
-        var responseDto = await _projectService.GetProjectByIdAsync(id);
+        var responseDto = await _projectService.GetProjectByIdAsync(id, new CurrentUser
+        {
+            Id = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value),
+            Role = User.FindFirst(ClaimTypes.Role)!.Value
+        });
         
         var response = _mapper.Map<ProjectInfoResponse>(responseDto);
 

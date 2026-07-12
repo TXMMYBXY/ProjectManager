@@ -8,6 +8,7 @@ using ProjectManager.Api.Features.Issue.Responses;
 using ProjectManager.Api.Features.Project.Requests;
 using ProjectManager.Application.Issue;
 using ProjectManager.Application.Issue.Dto;
+using ProjectManager.Application.Utils;
 using ProjectManager.Entities.Enums;
 
 namespace ProjectManager.Api.Controllers;
@@ -31,7 +32,11 @@ public class IssueController : ControllerBase
     {
         var filter = _mapper.Map<IssueFilter>(request);
         
-        var responseDto = await _issueService.GetAllIssuesAsync(filter);
+        var responseDto = await _issueService.GetAllIssuesAsync(filter, new CurrentUser
+        {
+            Id = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value),
+            Role = User.FindFirst(ClaimTypes.Role)!.Value
+        });
 
         var response = _mapper.Map<PagedIssueResponse>(responseDto);
 
@@ -41,7 +46,11 @@ public class IssueController : ControllerBase
     [HttpGet("{id:int}")]
     public async Task<ActionResult<IssueInfoResponse>> GetIssueById([FromRoute] int id)
     {
-        var responseDto = await _issueService.GetIssueByIdAsync(id);
+        var responseDto = await _issueService.GetIssueByIdAsync(id, new CurrentUser
+        {
+            Id = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value),
+            Role = User.FindFirst(ClaimTypes.Role)!.Value
+        });
         
         var response = _mapper.Map<IssueInfoResponse>(responseDto);
 

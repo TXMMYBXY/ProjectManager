@@ -3,13 +3,15 @@ using AutoMapper;
 using Microsoft.Extensions.Logging.Abstractions;
 using ProjectManager.Application.Project;
 using ProjectManager.Application.Project.Dto;
+using ProjectManager.Application.Utils;
+using ProjectManager.Entities.Enums;
 using ProjectManager.Infrastructure.Project;
 
 namespace ProjectManager.Infrastructure.Test;
 
 public class ProjectServiceTests
 {
-    private class FakeCurrentUser : ProjectManager.Application.Common.ICurrentUser
+    private class FakeCurrentUser : ProjectManager.Application.Utils.CurrentUser
     {
         public int Id { get; set; } = 1;
         public bool IsInRole(string role) => false;
@@ -57,7 +59,7 @@ public class ProjectServiceTests
             cfg.CreateMap<Entities.Models.Project, ProjectInfoDto>();
         });
 
-        var service = new ProjectService(new NullLogger<ProjectService>(), mapperCfg.CreateMapper(), new FakeCurrentUser(), fakeRepo, fakeEp);
+        var service = new ProjectService(new NullLogger<ProjectService>(), mapperCfg.CreateMapper(), fakeRepo, fakeEp);
 
         var dto = new CreateProjectDto { Title = "Проект А", CompanyCustomer = "Заказчик А", CompanyExecutor = "Исполнитель А", FinishDate = DateTime.UtcNow.AddDays(30), Priority = 1, ProjectManagerId = 1 };
 
@@ -80,7 +82,7 @@ public class ProjectServiceTests
 
         var mapper = new MapperConfiguration(cfg => { cfg.CreateMap<Entities.Models.Project, ProjectInfoDto>(); }).CreateMapper();
 
-        var service = new ProjectService(new NullLogger<ProjectService>(), mapper, new FakeCurrentUser(), fakeRepo, fakeEp);
+        var service = new ProjectService(new NullLogger<ProjectService>(), mapper, fakeRepo, fakeEp);
 
         await Assert.ThrowsAsync<ProjectManager.Application.Common.Exceptions.ConflictException>(() => service.AssignEmployeeToProjectAsync(1, 1));
     }
@@ -92,7 +94,7 @@ public class ProjectServiceTests
         var fakeEp = new FakeEmployeeProjectRepository();
         fakeEp.HasAnyLinksForProjectHandler = id => Task.FromResult(true);
 
-        var service = new ProjectService(new NullLogger<ProjectService>(), new MapperConfiguration(cfg => { }).CreateMapper(), new FakeCurrentUser(), fakeRepo, fakeEp);
+        var service = new ProjectService(new NullLogger<ProjectService>(), new MapperConfiguration(cfg => { }).CreateMapper(), fakeRepo, fakeEp);
 
         await Assert.ThrowsAsync<ProjectManager.Application.Common.Exceptions.ConflictException>(() => service.DeleteProjectByIdAsync(1));
     }
@@ -115,7 +117,7 @@ public class ProjectServiceTests
             cfg.CreateMap<Entities.Models.Project, ProjectInfoDto>();
         });
 
-        var service = new ProjectService(new NullLogger<ProjectService>(), mapperCfg.CreateMapper(), new FakeCurrentUser(), fakeRepo, fakeEp);
+        var service = new ProjectService(new NullLogger<ProjectService>(), mapperCfg.CreateMapper(), fakeRepo, fakeEp);
 
         var dto = new UpdateProjectDto { Title = "Проект Б", CompanyCustomer = "Заказчик Б", CompanyExecutor = "Исполнитель Б" };
 
@@ -159,9 +161,13 @@ public class ProjectServiceTests
             }, 1))
         };
 
-        var service = new ProjectService(new NullLogger<ProjectService>(), new MapperConfiguration(cfg => { }).CreateMapper(), new FakeCurrentUser(), fakeRepo, new FakeEmployeeProjectRepository());
+        var service = new ProjectService(new NullLogger<ProjectService>(), new MapperConfiguration(cfg => { }).CreateMapper(), fakeRepo, new FakeEmployeeProjectRepository());
 
-        var result = await service.GetAllProjectsAsync(new ProjectFilter { PageNumber = 1, PageSize = 10 });
+        var result = await service.GetAllProjectsAsync(new ProjectFilter { PageNumber = 1, PageSize = 10 }, new CurrentUser
+        {
+            Id = (int) UserRole.Director,
+            Role = nameof(UserRole.Director)
+        });
 
         Assert.Equal(1, result.TotalCount);
         Assert.Single(result.Projects);
@@ -176,8 +182,12 @@ public class ProjectServiceTests
             GetByIdHandler = (id, predicate) => Task.FromResult<ProjectInfoDto?>(null)
         };
 
-        var service = new ProjectService(new NullLogger<ProjectService>(), new MapperConfiguration(cfg => { }).CreateMapper(), new FakeCurrentUser(), fakeRepo, new FakeEmployeeProjectRepository());
+        var service = new ProjectService(new NullLogger<ProjectService>(), new MapperConfiguration(cfg => { }).CreateMapper(), fakeRepo, new FakeEmployeeProjectRepository());
 
-        await Assert.ThrowsAsync<ProjectManager.Application.Common.Exceptions.NotFoundException>(() => service.GetProjectByIdAsync(1));
+        await Assert.ThrowsAsync<ProjectManager.Application.Common.Exceptions.NotFoundException>(() => service.GetProjectByIdAsync(1, new CurrentUser
+        {
+            Id = (int) UserRole.Director,
+            Role = nameof(UserRole.Director)
+        }));
     }
 }

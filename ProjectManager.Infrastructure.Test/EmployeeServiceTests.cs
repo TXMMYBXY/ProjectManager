@@ -2,16 +2,18 @@ using AutoMapper;
 using Microsoft.Extensions.Logging.Abstractions;
 using ProjectManager.Application.Employee;
 using ProjectManager.Application.Employee.Dto;
+using ProjectManager.Application.Utils;
+using ProjectManager.Entities.Enums;
 using ProjectManager.Infrastructure.Employee;
 
 namespace ProjectManager.Infrastructure.Test;
 
 public class EmployeeServiceTests
 {
-    private class FakeCurrentUser : ProjectManager.Application.Common.ICurrentUser
+    private class FakeCurrentUser : ProjectManager.Application.Utils.CurrentUser
     {
         public int Id { get; set; } = 1;
-        public bool IsInRole(string role) => false;
+        public string Role { get; set; } = string.Empty;
     }
 
     private class FakeEmployeeRepository : IEmployeeRepository
@@ -73,7 +75,7 @@ public class EmployeeServiceTests
             return Task.CompletedTask;
         };
 
-        var service = new EmployeeService(new NullLogger<EmployeeService>(), mapper, new FakeCurrentUser(), null, fakeRepo, fakeEp);
+        var service = new EmployeeService(new NullLogger<EmployeeService>(), mapper, null, fakeRepo, fakeEp);
 
         var dto = new CreateEmployeeDto { FirstName = "Иван", LastName = "Петров", Patronymic = "Дмитриевич", Email = "ivan.petrov@example.ru" };
 
@@ -95,7 +97,7 @@ public class EmployeeServiceTests
 
         var mapper = new MapperConfiguration(cfg => { cfg.CreateMap<Entities.Models.Employee, EmployeeInfoDto>(); }).CreateMapper();
 
-        var service = new EmployeeService(new NullLogger<EmployeeService>(), mapper, new FakeCurrentUser(), null, fakeRepo, fakeEp);
+        var service = new EmployeeService(new NullLogger<EmployeeService>(), mapper, null, fakeRepo, fakeEp);
 
         await Assert.ThrowsAsync<ProjectManager.Application.Common.Exceptions.ConflictException>(() => service.AddProjectToEmployeeAsync(1, 1));
     }
@@ -112,7 +114,7 @@ public class EmployeeServiceTests
 
         var mapper = new MapperConfiguration(cfg => { cfg.CreateMap<CreateEmployeeDto, Entities.Models.Employee>(); }).CreateMapper();
 
-        var service = new EmployeeService(new NullLogger<EmployeeService>(), mapper, new FakeCurrentUser(), null, fakeRepo, fakeEp);
+        var service = new EmployeeService(new NullLogger<EmployeeService>(), mapper, null, fakeRepo, fakeEp);
 
         await Assert.ThrowsAsync<ProjectManager.Application.Common.Exceptions.ConflictException>(() => service.BulkInsertProjectsToEmployeeAsync(new List<int> { 1, 2 }, 5));
     }
@@ -141,7 +143,7 @@ public class EmployeeServiceTests
 
         var mapper = mapperCfg.CreateMapper();
 
-        var service = new EmployeeService(new NullLogger<EmployeeService>(), mapper, new FakeCurrentUser(), null, fakeRepo, fakeEp);
+        var service = new EmployeeService(new NullLogger<EmployeeService>(), mapper, null, fakeRepo, fakeEp);
 
         var dto = new UpdateEmployeeDto { FirstName = "Иван", LastName = "Сидоров", Email = "ivan.sidorov@example.ru" };
 
@@ -160,7 +162,7 @@ public class EmployeeServiceTests
 
         var mapper = new MapperConfiguration(cfg => { cfg.CreateMap<Entities.Models.Employee, EmployeeInfoDto>(); }).CreateMapper();
 
-        var service = new EmployeeService(new NullLogger<EmployeeService>(), mapper, new FakeCurrentUser(), null, fakeRepo, fakeEp);
+        var service = new EmployeeService(new NullLogger<EmployeeService>(), mapper, null, fakeRepo, fakeEp);
 
         await Assert.ThrowsAsync<ProjectManager.Application.Common.Exceptions.ConflictException>(() => service.DeleteEmployeeByIdAsync(1));
     }
@@ -200,9 +202,13 @@ public class EmployeeServiceTests
             }, 1))
         };
 
-        var service = new EmployeeService(new NullLogger<EmployeeService>(), new MapperConfiguration(cfg => { }).CreateMapper(), new FakeCurrentUser(), null, fakeRepo, new FakeEmployeeProjectRepository());
+        var service = new EmployeeService(new NullLogger<EmployeeService>(), new MapperConfiguration(cfg => { }).CreateMapper(),null, fakeRepo, new FakeEmployeeProjectRepository());
 
-        var result = await service.GetAllEmployeesAsync(new EmployeeFilter { PageNumber = 1, PageSize = 10 });
+        var result = await service.GetAllEmployeesAsync(new EmployeeFilter { PageNumber = 1, PageSize = 10 }, new CurrentUser
+        {
+            Id = (int) UserRole.Director,
+            Role = nameof(UserRole.Director)
+        });
 
         Assert.Equal(1, result.TotalCount);
         Assert.Single(result.Employees);
@@ -217,8 +223,12 @@ public class EmployeeServiceTests
             GetByIdHandler = (id, predicate) => Task.FromResult<EmployeeInfoDto?>(null)
         };
 
-        var service = new EmployeeService(new NullLogger<EmployeeService>(), new MapperConfiguration(cfg => { }).CreateMapper(), new FakeCurrentUser(), null, fakeRepo, new FakeEmployeeProjectRepository());
+        var service = new EmployeeService(new NullLogger<EmployeeService>(), new MapperConfiguration(cfg => { }).CreateMapper(),null, fakeRepo, new FakeEmployeeProjectRepository());
 
-        await Assert.ThrowsAsync<ProjectManager.Application.Common.Exceptions.NotFoundException>(() => service.GetEmployeeByIdAsync(1));
+        await Assert.ThrowsAsync<ProjectManager.Application.Common.Exceptions.NotFoundException>(() => service.GetEmployeeByIdAsync(1, new CurrentUser
+        {
+            Id = (int) UserRole.Director,
+            Role = nameof(UserRole.Director)
+        }));
     }
 }

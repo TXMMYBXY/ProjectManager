@@ -1,7 +1,7 @@
 using AutoMapper;
 using ProjectManager.Application.Account.Dto;
 
-namespace ProjectManager.Infrastructure.Common.MappingProfile;
+namespace ProjectManager.Application.Common.MappingProfile;
 
 public class AccountMappingProfile : Profile
 {

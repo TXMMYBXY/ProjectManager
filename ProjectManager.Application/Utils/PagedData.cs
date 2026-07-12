@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace ProjectManager.Application.Common;
+namespace ProjectManager.Application.Utils;
 
 public class PagedData
 {

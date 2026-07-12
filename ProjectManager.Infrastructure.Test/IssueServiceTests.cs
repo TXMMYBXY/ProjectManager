@@ -2,16 +2,18 @@ using AutoMapper;
 using Microsoft.Extensions.Logging.Abstractions;
 using ProjectManager.Application.Issue;
 using ProjectManager.Application.Issue.Dto;
+using ProjectManager.Application.Utils;
+using ProjectManager.Entities.Enums;
 using ProjectManager.Infrastructure.Issue;
 
 namespace ProjectManager.Infrastructure.Test;
 
 public class IssueServiceTests
 {
-    private class FakeCurrentUser : ProjectManager.Application.Common.ICurrentUser
+    private class FakeCurrentUser : ProjectManager.Application.Utils.CurrentUser
     {
         public int Id { get; set; } = 1;
-        public bool IsInRole(string role) => false;
+        public string Role { get; set; } = string.Empty;
     }
 
     private class FakeIssueRepository : IIssueRepository
@@ -49,7 +51,7 @@ public class IssueServiceTests
             cfg.CreateMap<Entities.Models.Issue, IssueInfoDto>();
         });
 
-        var service = new IssueService(new NullLogger<IssueService>(), mapperCfg.CreateMapper(), new FakeCurrentUser(), fakeRepo);
+        var service = new IssueService(new NullLogger<IssueService>(), mapperCfg.CreateMapper(), fakeRepo);
 
         var dto = new CreateIssueDto { Title = "Ошибка в модуле", Priority = 2, Status = ProjectManager.Entities.Enums.IssueStatus.ToDo, Comments = "Первый комментарий" };
 
@@ -74,7 +76,7 @@ public class IssueServiceTests
             cfg.CreateMap<Entities.Models.Issue, IssueInfoDto>();
         });
 
-        var service = new IssueService(new NullLogger<IssueService>(), mapperCfg.CreateMapper(), new FakeCurrentUser(), fakeRepo);
+        var service = new IssueService(new NullLogger<IssueService>(), mapperCfg.CreateMapper(), fakeRepo);
 
         var dto = new UpdateIssueDto { Comments = new ProjectManager.Application.Utils.Optional<string?>("Обновлённый комментарий") };
 
@@ -89,7 +91,7 @@ public class IssueServiceTests
         var fakeRepo = new FakeIssueRepository();
         fakeRepo.DeleteByIdHandler = id => Task.FromResult(0);
 
-        var service = new IssueService(new NullLogger<IssueService>(), new MapperConfiguration(cfg => { }).CreateMapper(), new FakeCurrentUser(), fakeRepo);
+        var service = new IssueService(new NullLogger<IssueService>(), new MapperConfiguration(cfg => { }).CreateMapper(), fakeRepo);
 
         await Assert.ThrowsAsync<ProjectManager.Application.Common.Exceptions.NotFoundException>(() => service.DeleteIssueByIdAsync(999));
     }
@@ -105,9 +107,13 @@ public class IssueServiceTests
             }, 1))
         };
 
-        var service = new IssueService(new NullLogger<IssueService>(), new MapperConfiguration(cfg => { }).CreateMapper(), new FakeCurrentUser(), fakeRepo);
+        var service = new IssueService(new NullLogger<IssueService>(), new MapperConfiguration(cfg => { }).CreateMapper(), fakeRepo);
 
-        var result = await service.GetAllIssuesAsync(new IssueFilter { PageNumber = 1, PageSize = 10 });
+        var result = await service.GetAllIssuesAsync(new IssueFilter { PageNumber = 1, PageSize = 10 }, new CurrentUser
+        {
+            Id = (int) UserRole.Director,
+            Role = nameof(UserRole.Director)
+        });
 
         Assert.Equal(1, result.TotalCount);
         Assert.Single(result.Issues);
@@ -122,8 +128,12 @@ public class IssueServiceTests
             GetByIdHandler = (id, predicate) => Task.FromResult<IssueInfoDto?>(null)
         };
 
-        var service = new IssueService(new NullLogger<IssueService>(), new MapperConfiguration(cfg => { }).CreateMapper(), new FakeCurrentUser(), fakeRepo);
+        var service = new IssueService(new NullLogger<IssueService>(), new MapperConfiguration(cfg => { }).CreateMapper(), fakeRepo);
 
-        await Assert.ThrowsAsync<ProjectManager.Application.Common.Exceptions.NotFoundException>(() => service.GetIssueByIdAsync(1));
+        await Assert.ThrowsAsync<ProjectManager.Application.Common.Exceptions.NotFoundException>(() => service.GetIssueByIdAsync(1, new CurrentUser
+        {
+            Id = (int) UserRole.Director,
+            Role = nameof(UserRole.Director)
+        }));
     }
 }
