@@ -9,7 +9,6 @@ using ProjectManager.Api.Features.Project.Requests;
 using ProjectManager.Application.Employee;
 using ProjectManager.Application.Employee.Dto;
 using ProjectManager.Application.Utils;
-using ProjectManager.Entities.Enums;
 
 namespace ProjectManager.Api.Controllers;
 

@@ -1,3 +1,4 @@
+using System.Data;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 using ProjectManager.Api;
@@ -32,7 +33,7 @@ builder.Services.AddAuthorizationPolicy();
 var app = builder.Build();
 
 app.UseErrorHandling();
-// В контейнерной среде HTTPS может быть не настроен — включаем перенаправление только если явно задан HTTPS порт или URL содержит https
+
 var httpsPort = builder.Configuration["ASPNETCORE_HTTPS_PORT"];
 var urls = builder.Configuration["ASPNETCORE_URLS"];
 if (!string.IsNullOrEmpty(httpsPort) || (urls != null && urls.Contains("https", StringComparison.OrdinalIgnoreCase)))
@@ -50,10 +51,7 @@ if (app.Environment.IsDevelopment())
     app.MapScalarApiReference();
 }
 
-// Миграции и сидирование выполняются в блоке ниже с ожиданием готовности БД
-
-// Выполнение миграций и создание тестовых пользователей (ждём готовности БД и создаём по одному пользователю на роль)
-System.Threading.Tasks.Task.Run(async () =>
+Task.Run(async () =>
 {
     using var scope = app.Services.CreateScope();
     try
@@ -61,7 +59,6 @@ System.Threading.Tasks.Task.Run(async () =>
         var services = scope.ServiceProvider;
         var db = services.GetRequiredService<ApplicationDbContext>();
 
-        // Ожидаем доступности SQL Server (подключаемся к master), затем создаём БД если нужно
         var maxAttempts = 30;
         var delayMs = 2000;
         var serverReady = false;
@@ -91,22 +88,20 @@ System.Threading.Tasks.Task.Run(async () =>
                 Log.Logger.Warning(ex, "SQL Server not ready yet (attempt {Attempt})", attempt);
             }
 
-            await System.Threading.Tasks.Task.Delay(delayMs);
+            await Task.Delay(delayMs);
         }
 
         if (!serverReady)
         {
-            throw new Exception("Unable to connect to SQL Server after multiple attempts");
+            throw new DataException("Unable to connect to SQL Server after multiple attempts");
         }
 
-        // Теперь можно применять миграции
         try
         {
             db.Database.Migrate();
         }
-        catch (Microsoft.Data.SqlClient.SqlException sqlEx) when (sqlEx.Number == 1801)
+        catch (SqlException sqlEx) when (sqlEx.Number == 1801)
         {
-            // Database already exists (possible race) - логируем и продолжаем
             Log.Logger.Warning(sqlEx, "Database already exists (ignored) during creation");
         }
 
@@ -123,7 +118,6 @@ System.Threading.Tasks.Task.Run(async () =>
             }
         }
 
-        // Создать по одному тестовому пользователю для каждой роли
         var seeds = new Dictionary<string, string>
         {
             { "Director", "director@example.com" },
@@ -160,7 +154,6 @@ System.Threading.Tasks.Task.Run(async () =>
     }
     catch (Exception ex)
     {
-        // Если ошибка связана с несогласованностью миграций — логируем и продолжаем, чтобы контейнер не падал.
         if (ex is InvalidOperationException)
         {
             Log.Logger.Error(ex, "Migration error (possible pending model changes). Add a new migration if necessary.");
