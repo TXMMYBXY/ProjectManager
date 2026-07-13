@@ -1,12 +1,10 @@
 using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
-using ProjectManager.Application.Account;
 using ProjectManager.Application.Account.Dto;
 using ProjectManager.Application.Common.Exceptions;
-using ProjectManager.Entities.Enums;
 
-namespace ProjectManager.Infrastructure.Account;
+namespace ProjectManager.Application.Account;
 
 public class AccountService : IAccountService
 {
@@ -45,7 +43,6 @@ public class AccountService : IAccountService
         if (!result.Succeeded)
             throw new Exception(string.Join(", ", result.Errors.Select(e => e.Description)));
         
-        // assign role in Identity by name
         await _userManager.AddToRoleAsync(employee, dto.Role.ToString());
         
         _logger.LogInformation("New account created successfully");

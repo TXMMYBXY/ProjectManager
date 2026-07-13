@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -7,7 +8,7 @@ using ProjectManager.Api.Features.Employee.Responses;
 using ProjectManager.Api.Features.Project.Requests;
 using ProjectManager.Application.Employee;
 using ProjectManager.Application.Employee.Dto;
-using ProjectManager.Entities.Enums;
+using ProjectManager.Application.Utils;
 
 namespace ProjectManager.Api.Controllers;
 
@@ -30,7 +31,11 @@ public class EmployeeController : ControllerBase
     {
         var filter = _mapper.Map<EmployeeFilter>(request);
         
-        var responseDto = await _employeeService.GetAllEmployeesAsync(filter);
+        var responseDto = await _employeeService.GetAllEmployeesAsync(filter, new CurrentUser
+        {
+            Id = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value),
+            Role = User.FindFirst(ClaimTypes.Role)!.Value
+        });
         
         var response = _mapper.Map<PagedEmployeeResponse>(responseDto);
 
@@ -40,7 +45,11 @@ public class EmployeeController : ControllerBase
     [HttpGet("{id:int}")]
     public async Task<ActionResult<EmployeeInfoResponse>> GetEmployeeById([FromRoute] int id)
     {
-        var responseDto = await _employeeService.GetEmployeeByIdAsync(id);
+        var responseDto = await _employeeService.GetEmployeeByIdAsync(id, new CurrentUser
+        {
+            Id = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value),
+            Role = User.FindFirst(ClaimTypes.Role)!.Value
+        });
         
         var response = _mapper.Map<EmployeeInfoResponse>(responseDto);
 

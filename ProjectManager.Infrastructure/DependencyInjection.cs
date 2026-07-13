@@ -8,13 +8,13 @@ using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
 using ProjectManager.Application.Account;
 using ProjectManager.Application.Common;
+using ProjectManager.Application.Common.MappingProfile;
 using ProjectManager.Application.Document;
 using ProjectManager.Application.Employee;
 using ProjectManager.Application.Issue;
 using ProjectManager.Application.Project;
 using ProjectManager.Infrastructure.Account;
 using ProjectManager.Infrastructure.Common;
-using ProjectManager.Infrastructure.Common.MappingProfile;
 using ProjectManager.Infrastructure.Configuration;
 using ProjectManager.Infrastructure.Data;
 using ProjectManager.Infrastructure.Document;
@@ -40,7 +40,6 @@ public static class DependencyInjection
         services.AddScoped<IIssueService, IssueService>();
         services.AddScoped<IAccountService, AccountService>();
         services.AddScoped<IJwtService, JwtService>();
-        services.AddScoped<ICurrentUser, CurrentUser>();
         services.AddScoped<IFileStorageService, FileStorageService>();
         services.AddScoped<IDocumentService, DocumentService>();
         

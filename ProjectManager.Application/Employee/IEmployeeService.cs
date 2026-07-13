@@ -1,11 +1,12 @@
 using ProjectManager.Application.Employee.Dto;
+using ProjectManager.Application.Utils;
 
 namespace ProjectManager.Application.Employee;
 
 public interface IEmployeeService
 {
-    Task<PagedEmployeeDto> GetAllEmployeesAsync(EmployeeFilter filter);
-    Task<EmployeeInfoDto> GetEmployeeByIdAsync(int id);
+    Task<PagedEmployeeDto> GetAllEmployeesAsync(EmployeeFilter filter, CurrentUser currentUser);
+    Task<EmployeeInfoDto> GetEmployeeByIdAsync(int id, CurrentUser currentUser);
     Task CreateEmployeeAsync(CreateEmployeeDto dto);
     Task<EmployeeInfoDto> AddProjectToEmployeeAsync(int projectId, int employeeId);
     Task<int> BulkInsertProjectsToEmployeeAsync(IReadOnlyList<int> projectIds, int employeeId);

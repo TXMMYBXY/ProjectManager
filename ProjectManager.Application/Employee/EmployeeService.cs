@@ -4,17 +4,16 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using ProjectManager.Application.Common;
 using ProjectManager.Application.Common.Exceptions;
-using ProjectManager.Application.Employee;
 using ProjectManager.Application.Employee.Dto;
+using ProjectManager.Application.Utils;
 using ProjectManager.Entities.Enums;
 
-namespace ProjectManager.Infrastructure.Employee;
+namespace ProjectManager.Application.Employee;
 
 public class EmployeeService : IEmployeeService
 {
     private readonly ILogger<EmployeeService> _logger;
     private readonly IMapper _mapper;
-    ICurrentUser _currentUser;
     private readonly UserManager<Entities.Models.Employee> _userManager;
     private readonly IEmployeeRepository _employeeRepository;
     private readonly IEmployeeProjectRepository _employeeProjectRepository;
@@ -22,31 +21,29 @@ public class EmployeeService : IEmployeeService
     public EmployeeService(
         ILogger<EmployeeService> logger,
         IMapper mapper,
-        ICurrentUser currentUser,
         UserManager<Entities.Models.Employee> userManager,
         IEmployeeRepository employeeRepository,
         IEmployeeProjectRepository employeeProjectRepository)
     {
         _logger = logger;
         _mapper = mapper;
-        _currentUser = currentUser;
         _userManager = userManager;
         _employeeRepository = employeeRepository;
         _employeeProjectRepository = employeeProjectRepository;
     }
     
-    public async Task<PagedEmployeeDto> GetAllEmployeesAsync(EmployeeFilter filter)
+    public async Task<PagedEmployeeDto> GetAllEmployeesAsync(EmployeeFilter filter, CurrentUser currentUser)
     {
         Expression<Func<Entities.Models.Employee, bool>>? predicate = null;
 
-        if (_currentUser.IsInRole(nameof(UserRole.Manager)))
+        if (currentUser.Role.Equals(nameof(UserRole.Manager)))
         {
             predicate = e =>
-                e.EmployeeProjects.Select(ep => ep.Project).Where(pr => pr.ProjectManagerId == _currentUser.Id).Any();
+                e.EmployeeProjects.Select(ep => ep.Project).Any(pr => pr.ProjectManagerId == currentUser.Id);
         }
-        else if (_currentUser.IsInRole(nameof(UserRole.Employee)))
+        else if (currentUser.Role.Equals(nameof(UserRole.Employee)))
         {
-            predicate = p => p.Id == _currentUser.Id;
+            predicate = p => p.Id == currentUser.Id;
         }
 
         var employeesDto = await _employeeRepository.GetAllEmployeesAsync(filter, predicate);
@@ -60,13 +57,13 @@ public class EmployeeService : IEmployeeService
         };
     }
 
-    public async Task<EmployeeInfoDto> GetEmployeeByIdAsync(int id)
+    public async Task<EmployeeInfoDto> GetEmployeeByIdAsync(int id, CurrentUser currentUser)
     {
         Expression<Func<Entities.Models.Employee, bool>>? predicate = null;
 
-        if (_currentUser.IsInRole(nameof(UserRole.Manager)))
+        if (currentUser.Role.Equals(nameof(UserRole.Manager)))
         {
-            predicate = e => e.EmployeeProjects.Where(ep => ep.Project.ProjectManagerId == _currentUser.Id).Any();
+            predicate = e => e.EmployeeProjects.Any(ep => ep.Project.ProjectManagerId == currentUser.Id);
         }
 
         var employeeDto = await _employeeRepository.GetEmployeeByIdAsync(id, predicate);

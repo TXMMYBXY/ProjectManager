@@ -1,8 +1,7 @@
 using AutoMapper;
-using Microsoft.EntityFrameworkCore;
 using ProjectManager.Application.Issue.Dto;
 
-namespace ProjectManager.Infrastructure.Common.MappingProfile;
+namespace ProjectManager.Application.Common.MappingProfile;
 
 public class IssueMappingProfile : Profile
 {
